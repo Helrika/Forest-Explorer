@@ -8,6 +8,7 @@ import { OrbitControls } from "./build/three/examples/jsm/controls/OrbitControls
 //import {FBXLoader} from './build/three/examples/jsm/loaders/FBXLoader.js';
 //import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 import {FirstPersonControls} from 'fps';
+import CharacterController from "charactercontroller";
 
 const KEYS = {
   'a': 65,
@@ -36,6 +37,7 @@ class InputController {
       mouseY: 0,
       mouseXDelta: 0,
       mouseYDelta: 0,
+      jump: true,
     };
     //browser cant store input so we manually do it by using current input
     this.previous = null;
@@ -48,6 +50,7 @@ class InputController {
     this.target.addEventListener('mousemove', (e) => this.onMouseMove(e), false);
     this.target.addEventListener('keydown', (e) => this.onKeyDown(e), false);
     this.target.addEventListener('keyup', (e) => this.onKeyUp(e), false);
+    this.target.addEventListener('keyjump', (e) => this.onKeyJump(e), false);
   }
 //we use these to stash input into the class and use them later
   onMouseDown(e) {
@@ -98,6 +101,9 @@ class InputController {
   onKeyUp(e) {
     this.keys[e.keyCode] = false;
   }
+  onKeyJump(e) {
+    this.keys[e.keyCode] = false;
+  }
   key(keyCode) {
     return !!this.keys[keyCode];
   }
@@ -115,8 +121,9 @@ class InputController {
 }
 
 class FirstPersonCamera {
-  constructor(camera) {
+  constructor(camera, clock) {
     this.camera = camera;
+    this.clock = clock;
     this.input = new InputController();
     this.rotation = new THREE.Quaternion();
     //default camera position
@@ -125,6 +132,13 @@ class FirstPersonCamera {
     this.theta = 0;
     this.phiSpeed = 8;
     this.thetaSpeed = 5;
+    this.clock = new THREE.Clock();
+    this.canJump = false;
+    this.revert = false;
+    this.groundHeight = 2;
+    this.airSpace = 2.3;
+    this.maxJumpHeight = this.groundHeight +this.airSpace;
+    this.velocity_y = 16;  
    // this.objects_ = objects;
   }
   
@@ -133,6 +147,18 @@ class FirstPersonCamera {
     this.UpdateRotation(timeElapsedS);
     this.UpdateCamera(timeElapsedS);
     this.UpdateTranslation(timeElapsedS);
+   
+    if(this.camera.position.y <= this.groundHeight) {
+      this.canJump = true;
+      this.camera.position.y =this.groundHeight;
+      this.revert = false;
+    }
+
+    if(this.camera.position.y >= this.maxJumpHeight) {
+      this.canJump = false;
+      this.revert = true;
+    }
+   
     //if input update isnt called, then the rotation will spaz out
     this.input.update(timeElapsedS);
     
@@ -140,15 +166,15 @@ class FirstPersonCamera {
   
   UpdateCamera(_) {
     this.camera.quaternion.copy(this.rotation);
-   // console.log(this.translation);
+   //console.log(this.translation);
    this.camera.position.copy(this.translation);
+
+
   // this.camera.position.y = 2;
    //this.camera.y = 10;
 
  
-    document.onkeydown = function(e) {
-      console.log(e);
-    }
+  
   
   }
 
@@ -179,14 +205,15 @@ class FirstPersonCamera {
     //final rotation calculation
     this.rotation.copy(q);
     
-  }
+  }  
 
 
   UpdateTranslation(timeElapsedS) {
     //this is where movement is handled
     const forwardVelocity = (this.input.key(KEYS.w) ? 1 : 0) + (this.input.key(KEYS.s) ? -1 : 0);
     const strafeVelocity = (this.input.key(KEYS.a) ? 1 : 0) + (this.input.key(KEYS.d) ? -1 : 0);
-    //const jumpVelocity = (this.input.key(KEYS.space) ? 1 : 0);
+
+   // const jumpVelocity = (this.input.key(KEYS.space) ? 3 : -0.5 );
     const qx = new THREE.Quaternion();
     qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
     //values for moving forward and back
@@ -197,9 +224,49 @@ class FirstPersonCamera {
     const left = new THREE.Vector3(-1, 0, 0);
     left.applyQuaternion(qx);
     left.multiplyScalar(strafeVelocity * timeElapsedS * 10);
+
+
     
+    const jump = new THREE.Vector3(0, 1, 0);
+//this is the jump handlers. you might be wonderign why is the value differenc e so high. change the 10 to a low number and you wont fall
+    if(!this.revert) {
+      const jumpVelocity = (this.input.key(KEYS.space) ? 10 : 0 );
+        this.canJump = false;
+        //this.revert = true;
+        jump.applyQuaternion(qx);
+
+        jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
+        this.translation.add(jump);
+    }
+
+    
+
     this.translation.add(forward);
     this.translation.add(left);
+   
+    if(this.revert) {
+      const jumpVelocity = (this.input.key(KEYS.space) ? -0.6 : -0.6 );
+      jump.applyQuaternion(qx);
+
+      jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
+      this.translation.add(jump);
+    }
+
+    //altjump code. snappy but its the only one that allows for gravity falling regardless of value
+    // if (this.input.key(KEYS.space) && this.canJump) {// space
+    //   this.canJump = false;
+    //   this.velocity_y = 160;
+    // }
+    // this.camera.position.y+=this.velocity_y*timeElapsedS;
+
+    // if(this.canJump==false){
+    //   this.velocity_y-=160*2*timeElapsedS;
+    //   if(this.camera.position.y<=2){
+    //   this.canJump = false;
+    //   this.velocity_y=0;
+    //   this. camera.position.y=2;
+    //   }
+    // }
   
   }
 
@@ -241,7 +308,7 @@ class loadedWorld {
       this.mixers = [];
 
       
-
+      this.clock=new THREE.Clock();
 
       //camera
       const fov = 100;
@@ -407,7 +474,7 @@ class loadedWorld {
 
   InitializeCamera() {
     //put Camera elements in here!
-    this.fpsCamera = new FirstPersonCamera(this.camera);
+    this.fpsCamera = new FirstPersonCamera(this.camera, this.clock);
     
 
   }
