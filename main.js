@@ -6,7 +6,7 @@ import { OrbitControls } from "./build/three/examples/jsm/controls/OrbitControls
 //import {DragControls} from './build/three/examples/jsm/controls/DragControls.js';
 
 //import {FBXLoader} from './build/three/examples/jsm/loaders/FBXLoader.js';
-//import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
+import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import {FirstPersonControls} from 'fps';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
@@ -86,13 +86,17 @@ class loadedWorld {
       './resources/skybox/posz.jpg',
       './resources/skybox/negz.jpg',
   ]);
+  const loader1 = new THREE.TextureLoader();
+  const height = loader1.load([
+    './resources/height-map.png',
+]);
 
     texture.encoding = THREE.sRGBEncoding;
     this.scene.background = texture;
 
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    const checkerboard = mapLoader.load('resources/checkerboard.png');
+    const checkerboard = mapLoader.load('resources/grass.png');
     checkerboard.anisotropy = maxAnisotropy;
     checkerboard.wrapS = THREE.RepeatWrapping;
     checkerboard.wrapT = THREE.RepeatWrapping;
@@ -100,11 +104,15 @@ class loadedWorld {
     checkerboard.encoding = THREE.sRGBEncoding;
 
     const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100, 10, 10),
-        new THREE.MeshStandardMaterial({map: checkerboard}));
+        new THREE.PlaneGeometry(1000, 1000, 10, 10),
+        new THREE.MeshStandardMaterial({map: checkerboard,
+        displacementMap: height}));
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
+
+
+
     this.scene.add(plane);
 
     const box = new THREE.Mesh(
@@ -115,44 +123,11 @@ class loadedWorld {
     box.receiveShadow = true;
     this.scene.add(box);
 
-    const concreteMaterial = this.loadMaterial_('concrete3-', 4);
-
-    const wall1 = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 100, 4),
-      concreteMaterial);
-    wall1.position.set(0, -40, -50);
-    wall1.castShadow = true;
-    wall1.receiveShadow = true;
-    this.scene.add(wall1);
-
-    const wall2 = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 100, 4),
-      concreteMaterial);
-    wall2.position.set(0, -40, 50);
-    wall2.castShadow = true;
-    wall2.receiveShadow = true;
-    this.scene.add(wall2);
-
-    const wall3 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 100, 100),
-      concreteMaterial);
-    wall3.position.set(50, -40, 0);
-    wall3.castShadow = true;
-    wall3.receiveShadow = true;
-    this.scene.add(wall3);
-
-    const wall4 = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 100, 100),
-      concreteMaterial);
-    wall4.position.set(-50, -40, 0);
-    wall4.castShadow = true;
-    wall4.receiveShadow = true;
-    this.scene.add(wall4);
 
     // // Create Box3 for each mesh in the scene so that we can
     // // do some easy intersection tests.
     const meshes = [
-      plane, box, wall1, wall2, wall3, wall4];
+      plane, box];
 
     this.objects_ = [];
 
@@ -162,8 +137,62 @@ class loadedWorld {
       this.objects_.push(b);
     }
    
-
+    this._LoadTreeModel();
+    this._LoadGrassModel();
   }
+
+  _LoadTreeModel() {
+    let trees = [];
+    const loader = new GLTFLoader();
+
+    loader.load('./resources/tree/scene.gltf', (gltf) => {
+        gltf.scene.traverse(c => {
+            c.castShadow = true;
+            
+          });
+         // console.log(gltf)
+         this.scene.add(gltf.scene);
+         for(let i = 0; i<101; i++) {
+         // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+          trees.push(gltf.scene.clone());
+          if(i == 100) {
+            for(let j = 0; j<trees.length;j++) {
+              trees[j].position.set(100*Math.random() +5,0,100*Math.random())
+              this.scene.add(trees[j]);
+            }
+          }
+         }
+
+    });
+
+}
+
+_LoadGrassModel() {
+  let grass = [];
+  const loader = new GLTFLoader();
+
+  loader.load('./resources/grass/scene.gltf', (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+        gltf.scene.scale.set(5,5,5);
+       // console.log(gltf)
+       this.scene.add(gltf.scene);
+       for(let i = 0; i<100; i++) {
+       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+        grass.push(gltf.scene.clone());
+        if(i == 99) {
+          for(let j = 0; j<grass.length;j++) {
+            grass[j].position.set(100*Math.random() +5,0,100*Math.random())
+            this.scene.add(grass[j]);
+          }
+        }
+       }
+
+  });
+
+}
 
   ////////////////////////////////////////////////////////////////////
   //////////// change any material loading here
@@ -254,6 +283,31 @@ class loadedWorld {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     this.scene.add(plane);
+  }
+
+  InitializeMap() {
+    // initialize plane
+    this.plane = new THREE.PlaneBufferGeometry(1000, 1000, 10, 10);
+    this.plane.castShadow = true;
+    this.plane.receiveShadow = true;
+
+    this.vertices = this.plane.attributes.position.array;
+    // apply height map to vertices of plane
+    for(i=0, j=2; i < data.length; i += 4, j += 3) {
+        vertices[j] = data[i] * HEIGHT_AMPLIFIER;
+    }
+
+    var material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, side: THREE.DoubleSide, shading: THREE.FlatShading});
+
+    var mesh = new THREE.Mesh(plane, material);
+    mesh.rotation.x = - Math.PI / 2;
+    mesh.matrixAutoUpdate  = false;
+    mesh.updateMatrix();
+
+    plane.computeFaceNormals();
+    plane.computeVertexNormals();
+
+    scene.add(mesh);
   }
 
   
