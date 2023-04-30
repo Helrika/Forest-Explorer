@@ -21,6 +21,7 @@ class loadedWorld {
       this.InitializeLights();
       this.initializeScene_();
       this.InitializeCamera();
+      this.raycast();
    
   }
 
@@ -47,7 +48,7 @@ class loadedWorld {
       this.previousRAF = null;
       //animation state
       this.mixers = [];
-
+      this.object = [];
       
       this.clock=new THREE.Clock();
 
@@ -110,6 +111,7 @@ class loadedWorld {
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
+    plane.userData.ground= true;
 
 
 
@@ -121,6 +123,9 @@ class loadedWorld {
     box.position.set(10, 2, 0);
     box.castShadow = true;
     box.receiveShadow = true;
+    this.object.push(box);
+   box.userData.draggable = true;
+     box.userData.name = "box";
     this.scene.add(box);
 
 
@@ -158,6 +163,7 @@ class loadedWorld {
           if(i == 100) {
             for(let j = 0; j<trees.length;j++) {
               trees[j].position.set(100*Math.random() +5,0,100*Math.random())
+
               this.scene.add(trees[j]);
             }
           }
@@ -318,6 +324,67 @@ _LoadGrassModel() {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
   
+
+//ray cast set up
+  raycast() {
+    this.raycaster = new THREE.Raycaster();
+    this.clickMouse = new THREE.Vector2();
+    this.moveMouse = new THREE.Vector2();
+    this.draggable =[];
+  
+    window.addEventListener("click",  (event) => {
+  
+      if(this.draggable[0]) {
+        console.log('drag is gonezos '+ this.draggable[0].userData.name)
+        this.draggable.pop();
+        return;
+      }
+          
+      this.clickMouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      this.clickMouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  
+      this.raycaster.setFromCamera( this.clickMouse, this.camera );
+      this.found = this.raycaster.intersectObjects( this.scene.children);
+      console.log(this.found[0])
+      if((this.found.length>0 && this.found[0].object.userData.draggable)) {
+        this.draggable.push(this.found[0].object);
+        console.log(this.found[0].object.userData.name +" is found");
+    
+      } else if((this.found.length>0 && this.found[0].object.parent.userData.draggable)) {
+        this.draggable.push(this.found[0].object.parent);
+  
+      }
+      }); 
+  
+  
+      window.addEventListener("mousemove",  (event) => {
+  
+  
+      this.moveMouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      this.moveMouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  
+  
+      }); 
+  }
+ //draggable items 
+  dragObject() {
+    if(this.draggable[0] != null) {
+  
+      this.raycaster.setFromCamera( this.moveMouse, this.camera );
+      this.found2 = this.raycaster.intersectObjects( this.scene.children );
+      if(this.found2.length>0) {
+
+        for(let o of this.found2){
+          if(!o.object.userData.ground)
+            continue
+            this.draggable[0].position.x = o.point.x;
+            this.draggable[0].position.z = o.point.z;
+        }
+      }
+    }
+  }
+
+
 //animate
   _RAF() {
       requestAnimationFrame((t) => {
@@ -326,7 +393,7 @@ _LoadGrassModel() {
           }
     
           this._RAF();
-    
+          this.dragObject();
           this.renderer.render(this.scene, this.camera);
           this._Step(t - this.previousRAF);
           this.previousRAF = t;
