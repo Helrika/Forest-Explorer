@@ -111,7 +111,7 @@ export class InputController {
   }
   
   export class FirstPersonCamera {
-    constructor(camera, clock) {
+    constructor(camera, clock, player, boundingboxs, playerBB, planeBB, objects) {
       this.camera = camera;
       this.clock = clock;
       this.input = new InputController();
@@ -128,37 +128,116 @@ export class InputController {
       this.groundHeight = 2;
       this.airSpace = 2.3;
       this.maxJumpHeight = this.groundHeight +this.airSpace;
-      this.velocity_y = 16;  
+      this.velocity_y = 16;
+      this.boxs = boundingboxs;
+      this.player = player;
+      this.playerBB = playerBB;
+      this.planeBB = planeBB; 
+      this.canJump = true; 
+      this.jumpVelocity = 1;
+      this.raycaster = new THREE.Raycaster();
+      this.search = [];
+      this.objects = objects;
+      this.Initialize(); 
      // this.objects_ = objects;
+    }
+    Initialize() {
+      
+      
+      console.log(this.raycaster)
+      for(let i = 0; i<360; i+=90) {
+        this.search[i] = new THREE.Vector3(Math.cos(i),2,Math.sin(i));
+      }
     }
     
     //look in the direction we want
     Update(timeElapsedS) {
+     
       this.UpdateRotation(timeElapsedS);
       this.UpdateCamera(timeElapsedS);
-      this.UpdateTranslation(timeElapsedS);
-     
+
       if(this.camera.position.y <= this.groundHeight) {
         this.canJump = true;
         this.camera.position.y =this.groundHeight;
+        this.player.position.y =this.groundHeight -1;
         this.revert = false;
+        this.jumpVelocity =1;
       }
-  
-      if(this.camera.position.y >= this.maxJumpHeight) {
+       if(this.camera.position.y > this.groundHeight) {
         this.canJump = false;
-        this.revert = true;
-      }
+       }
+   
+      this.UpdateTranslation(timeElapsedS);
+      this.UpdateCollisions(timeElapsedS);
+     
+      this.checkFortarget();
+  
+      // if(this.camera.position.y >= this.maxJumpHeight) {
+      //   this.canJump = false;
+      //   this.revert = true;
+      // }
      
       //if input update isnt called, then the rotation will spaz out
       this.input.update(timeElapsedS);
       
+    }
+    checkFortarget() {
+      for(let i = 0; i<this.search.length; i+=90) {
+        this.raycaster.set(this.camera.position, this.search[i], 0.0, 500.0);
+        console.log(this.raycaster)
+         this.intersects = this.raycaster.intersectObjects(this.objects);
+         // console.log("origin")
+         // console.log(this.raycaster.ray.origin)
+         // console.log("direction")
+         // console.log(this.raycaster.ray.direction)
+         if(this.intersects[0]) {
+           console.log(true);
+         }
+      }
+      this.search.forEach((direction) => {
+       
+        
+
+      });
+    }
+    UpdateCollisions(_) {
+      this.playerBB.copy(this.player.geometry.boundingBox).applyMatrix4(this.player.matrixWorld);
+      if( this.playerBB.intersectsBox(this.planeBB)) {
+        this.groundHeight = 2;
+      }
+      for (let i = 0; i<this.boxs.length;i++) {
+        if(this.playerBB.intersectsBox(this.boxs[i])){
+          this.groundHeight = this.boxs[i].max.y +2;
+         // this.player.position.copy(this.camera.position);
+          //  this.player.position.y = 3;
+          //  this.camera.position.y =3;
+          // console.log(this.player.position);
+        } else {
+         
+          this.groundHeight = 2;
+          //this.canJump = false;
+          //console.log(this.player.position); 
+        }
+        
+      }
     }
     
     UpdateCamera(_) {
       this.camera.quaternion.copy(this.rotation);
      //console.log(this.translation);
      this.camera.position.copy(this.translation);
+
+     this.player.quaternion.copy(this.rotation);
+     //console.log(this.translation);
+     this.player.position.copy(this.translation);
+    
+ 
+    //  console.log("pleyr stuff")
+
+    //  console.log(this.player);
   
+    //  console.log("came")
+    //  console.log(this.camera);
   
     // this.camera.position.y = 2;
      //this.camera.y = 10;
@@ -215,32 +294,43 @@ export class InputController {
       left.applyQuaternion(qx);
       left.multiplyScalar(strafeVelocity * timeElapsedS * 10);
   
-  
-      
       const jump = new THREE.Vector3(0, 1, 0);
-  //this is the jump handlers. you might be wonderign why is the value differenc e so high. change the 10 to a low number and you wont fall
-      if(!this.revert) {
-        const jumpVelocity = (this.input.key(KEYS.space) ? 10 : 0 );
-          this.canJump = false;
-          //this.revert = true;
-          jump.applyQuaternion(qx);
-  
-          jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
-          this.translation.add(jump);
-      }
-  
-      
-  
       this.translation.add(forward);
       this.translation.add(left);
-     
-      if(this.revert) {
-        const jumpVelocity = (this.input.key(KEYS.space) ? -0.6 : -0.6 );
-        jump.applyQuaternion(qx);
-  
-        jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
-        this.translation.add(jump);
+      
+      if(this.input.key(KEYS.space)) {
+        this.canJump = false;
       }
+      if(this.canJump == false ) {
+        this.jumpVelocity -= timeElapsedS;
+        jump.applyQuaternion(qx);
+        jump.multiplyScalar(this.jumpVelocity  * timeElapsedS * 10);
+           this.translation.add(jump);
+      }
+
+  //     const jump = new THREE.Vector3(0, 1, 0);
+  // //this is the jump handlers. you might be wonderign why is the value differenc e so high. change the 10 to a low number and you wont fall
+  //     if(!this.revert) {
+  //       const jumpVelocity = (this.input.key(KEYS.space) ? 10 : 0 );
+  //         this.canJump = false;
+  //         //this.revert = true;
+  //         jump.applyQuaternion(qx);
+  
+  //         jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
+  //         this.translation.add(jump);
+  //     }
+  
+      
+  
+
+     
+  //     if(this.revert) {
+  //       const jumpVelocity = (this.input.key(KEYS.space) ? -0.6 : -0.6 );
+  //       jump.applyQuaternion(qx);
+  
+  //       jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
+  //       this.translation.add(jump);
+  //     }
   
       //altjump code. snappy but its the only one that allows for gravity falling regardless of value
       // if (this.input.key(KEYS.space) && this.canJump) {// space

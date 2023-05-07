@@ -10,7 +10,7 @@ import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import {FirstPersonControls} from 'fps';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
-
+import {collsionDetect} from './collisions.js';
 
 
 
@@ -49,8 +49,9 @@ class loadedWorld {
       //animation state
       this.mixers = [];
       this.object = [];
-      
+      this.boxes = [];
       this.clock=new THREE.Clock();
+      this.objectlist =[];
 
       //camera
       const fov = 100;
@@ -59,6 +60,7 @@ class loadedWorld {
       const far = 1000.0;
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       this.camera.position.set(0, 2, 0);
+    
 
       // const orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
       // orbitControls.enableDamping = true
@@ -112,7 +114,10 @@ class loadedWorld {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     plane.userData.ground= true;
-
+    this.plane1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    //gets the boundaries
+    this.plane1BB.setFromObject(plane);
+   // this.boxes.push(this.plane1BB);
 
 
     this.scene.add(plane);
@@ -126,8 +131,23 @@ class loadedWorld {
     this.object.push(box);
    box.userData.draggable = true;
      box.userData.name = "box";
+     this.boxBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+     //gets the boundaries
+     this.boxBB.setFromObject(box);
+     this.boxes.push(this.boxBB);
+     this.objectlist.push(box);
     this.scene.add(box);
 
+    this.playerGeo = new THREE.CapsuleGeometry(1,1,4,8);
+    this.playerMesh = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    this.player = new THREE.Mesh(this.playerGeo, this.playerMesh)
+    this.player.y = 2;
+    this.player.userData.name = "player";
+    this.player.userData.draggable = false;
+    this.playerBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    //gets the boundaries
+    this.playerBB.setFromObject(this.player);
+    this.scene.add(this.player);  
 
     // // Create Box3 for each mesh in the scene so that we can
     // // do some easy intersection tests.
@@ -250,8 +270,8 @@ _LoadGrassModel() {
 
   InitializeCamera() {
     //put Camera elements in here!
-    this.fpsCamera = new FirstPersonCamera(this.camera, this.clock);
-    
+    this.fpsCamera = new FirstPersonCamera(this.camera, this.clock, this.player,this.boxes, this.playerBB, this.plane1BB, this.objectlist);
+   // this.collisions = new collsionDetect(this.camera, this.clock, this.player, this.boxes, this.playerBB);
 
   }
 
@@ -409,6 +429,7 @@ _LoadGrassModel() {
   
     
       this.fpsCamera.Update(timeElapsedS);
+     // this.collisions.Update(timeElapsedS);
 
   }
   
