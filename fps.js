@@ -144,7 +144,7 @@ export class InputController {
     Initialize() {
       
       
-      console.log(this.raycaster)
+      //console.log(this.raycaster)
       for(let i = 0; i<360; i+=90) {
         this.search[i] = new THREE.Vector3(Math.cos(i),2,Math.sin(i));
       }
@@ -184,7 +184,7 @@ export class InputController {
     checkFortarget() {
       for(let i = 0; i<this.search.length; i+=90) {
         this.raycaster.set(this.camera.position, this.search[i], 0.0, 500.0);
-        console.log(this.raycaster)
+        //console.log(this.raycaster)
          this.intersects = this.raycaster.intersectObjects(this.objects);
          // console.log("origin")
          // console.log(this.raycaster.ray.origin)

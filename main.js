@@ -10,7 +10,7 @@ import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import {FirstPersonControls} from 'fps';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
-import {collsionDetect} from './collisions.js';
+
 
 
 
