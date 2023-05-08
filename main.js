@@ -10,6 +10,7 @@ import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import {FirstPersonControls} from 'fps';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
+import {rainFx} from './rain.js';
 
 
 
@@ -22,6 +23,8 @@ class loadedWorld {
       this.initializeScene_();
       this.InitializeCamera();
       this.raycast();
+      this._loadClouds();
+
    
   }
 
@@ -61,7 +64,9 @@ class loadedWorld {
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       this.camera.position.set(0, 2, 0);
     
-
+      this.cloudsArr = [];
+      this.rainCount =15000;
+      this.drops = 0;
       // const orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
       // orbitControls.enableDamping = true
       // orbitControls.minDistance = 25
@@ -403,7 +408,75 @@ _LoadGrassModel() {
       }
     }
   }
+  _loadClouds() {
+    this.cloudGeo = new THREE.PlaneGeometry(500,500);
+    this.cloudMat = new THREE.MeshLambertMaterial({
+      map: this.textures,
+      transparent: true,
+      alphaTest: 0.5,
+      // blending: THREE.CustomBlending,
+      // blendSrc: THREE.OneFactor,
+      // blendDst: THREE.OneMinusSrcAlphaFactor,
+    });
+    for(let i =0; i<25;i++) {
+        this.cloud = new THREE.Mesh(this.cloudGeo, this.cloudMat);
+        this.cloud.position.set(
+          Math.random()* 1000 -200, 
+          200,
+          Math.random()* 1000 -450
+        );
+        this.cloud.rotation.set(
+          1.16,
+          -0.12,
+          Math.random()*360
+        );
+        this.cloud.material.opacity = 0.6;
+        this.cloudsArr.push(this.cloud);
+        this.scene.add(this.cloud);
+    }
 
+
+
+    this.flash = new THREE.PointLight(0x062d89,30,500,1.7);
+    this.flash.position.set(200,300,100);
+    this.scene.add(this.flash);
+
+
+    //this.rainBuff = new THREE.BufferGeometry();
+    //this.rainGeo = new THREE.BoxGeometry();
+    //console.log(this.rainGeo)
+    this.vertices = [];
+    for(let i = 0; i <this.rainCount; i++) {
+      this.rainDrop = new THREE.Vector3(
+        Math.random() * 400 -200,
+        Math.random() * 500 -250,
+        Math.random() * 400 -200,
+      );
+      this.rainDrop.velocity = {};
+      this.rainDrop.velocity = 0;
+      this.vertices.push(this.rainDrop);
+      if(i == this.rainCount-1) {
+        this.rainGeo = new THREE.BufferGeometry().setFromPoints(this.vertices);
+        
+        
+     //this.rainGeo.geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( this.vertices, 3 ) );
+      //this.rainGeo.geometry.attributes.position.needsUpdate = true;
+      }
+
+    }
+    this.drops = this.rainGeo.getAttribute( 'position' );
+  
+    this.rainMat = new THREE.PointsMaterial({
+      color:0xaaaaaa,
+      size: 0.1,
+      transparent: true
+    })
+    this.rain = new THREE.Points(this.rainGeo,this.rainMat);
+    this.scene.add(this.rain);
+
+    this.rainDown = new rainFx(this.cloudArr, this.flash, this.rainGeo, this.vertices);
+
+  }
 
 //animate
   _RAF() {
@@ -414,6 +487,7 @@ _LoadGrassModel() {
     
           this._RAF();
           this.dragObject();
+          this.rainDown.Update();
           this.renderer.render(this.scene, this.camera);
           this._Step(t - this.previousRAF);
           this.previousRAF = t;
