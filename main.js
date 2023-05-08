@@ -166,35 +166,171 @@ class loadedWorld {
       b.setFromObject(meshes[i]);
       this.objects_.push(b);
     }
-   
     this._LoadTreeModel();
     this._LoadGrassModel();
+    this._LoadRockModel()
+
   }
 
-  _LoadTreeModel() {
-    let trees = [];
-    const loader = new GLTFLoader();
 
-    loader.load('./resources/tree/scene.gltf', (gltf) => {
-        gltf.scene.traverse(c => {
-            c.castShadow = true;
-            
-          });
-         // console.log(gltf)
-         this.scene.add(gltf.scene);
-         for(let i = 0; i<101; i++) {
-         // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-          trees.push(gltf.scene.clone());
-          if(i == 100) {
-            for(let j = 0; j<trees.length;j++) {
-              trees[j].position.set(100*Math.random() +5,0,100*Math.random())
+_LoadTreeModel() {
 
-              this.scene.add(trees[j]);
-            }
+  //CREATES CORDS
+
+  let spaceX = 0;
+  let spaceZ = 0;
+  let count = 0;
+  let index = 0;
+  let xCord = [];
+  let zCord = [];
+  while (count < 11){
+    for (let i = 0; i < 11; i++){
+      xCord[index] = spaceX + 15*Math.random();
+      //chguucwsuhwcu
+      ///ghxwyhgxwygxwygw
+      zCord[index] = spaceZ + 15*Math.random();
+      spaceZ = spaceZ + 20;
+      index = index + 1;
+    }
+    count = count + 1;
+    spaceX = spaceX + 20;
+    spaceZ = 0;
+  }
+  
+  ////////////////
+
+
+  //RANDOMIZES
+
+  let xCord2 = [];
+  let zCord2 = [];
+
+  const arr = [];
+
+  for (let i = 0; i <= 101; i++) {
+    arr.push(i);
+  }
+
+  arr.sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < xCord.length; i++){
+    xCord2.push(xCord[arr[i]]);
+    zCord2.push(zCord[arr[i]]);
+  }
+
+  /////////////////
+
+
+  //LOADS IN TREE 1
+  let trees = [];
+  const loader = new GLTFLoader();
+  loader.load('./resources/tree2/scene.gltf', (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+
+       // console.log(gltf)
+       this.scene.add(gltf.scene);
+       for(let i = 0; i<41; i++) {
+       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+        trees.push(gltf.scene.clone());
+        
+        if(i == 40) {
+          for(let j = 0; j<trees.length;j++) {
+            //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
+            trees[j].position.set(xCord2[j],0,zCord2[j])
+            this.scene.add(trees[j]);
           }
-         }
+        }
+       }
 
-    });
+  });
+
+  /////////////////
+
+
+  //LOADS IN TREE 2
+
+  loader.load('./resources/tree/scene.gltf', (gltf) => {
+    gltf.scene.traverse(c => {
+        c.castShadow = true;
+        
+      });
+
+     // console.log(gltf)
+     this.scene.add(gltf.scene);
+     for(let i = 0; i<41; i++) {
+     // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+      trees.push(gltf.scene.clone());
+      
+      if(i == 40) {
+        for(let j = 39; j<trees.length;j++) {
+          //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
+          trees[j].position.set(xCord2[j],0,zCord2[j])
+          this.scene.add(trees[j]);
+        }
+      }
+     }
+
+  });
+
+  /////////////////
+
+
+  //LOADS IN TREE 3
+
+  loader.load('./resources/deadtree/scene.gltf', (gltf) => {
+    gltf.scene.traverse(c => {
+        c.castShadow = true;
+        
+      });
+
+     // console.log(gltf)
+     this.scene.add(gltf.scene);
+     for(let i = 0; i<21; i++) {
+     // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+      trees.push(gltf.scene.clone());
+      
+      if(i == 20) {
+        for(let j = 79; j<trees.length;j++) {
+          //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
+          trees[j].position.set(xCord2[j],0,zCord2[j])
+          this.scene.add(trees[j]);
+        }
+      }
+     }
+
+  });
+
+  /////////////////
+
+}
+
+//old version of tree model done by helrika
+_LoadTreeModelOgHelVer() {
+  let trees = [];
+  const loader = new GLTFLoader();
+  loader.load('./resources/tree/scene.gltf', (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+       // console.log(gltf)
+       this.scene.add(gltf.scene);
+       for(let i = 0; i<101; i++) {
+       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+        trees.push(gltf.scene.clone());
+        
+        if(i == 100) {
+          for(let j = 0; j<trees.length;j++) {
+            trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
+            this.scene.add(trees[j]);
+          }
+        }
+       }
+
+  });
 
 }
 
@@ -215,8 +351,36 @@ _LoadGrassModel() {
         grass.push(gltf.scene.clone());
         if(i == 99) {
           for(let j = 0; j<grass.length;j++) {
-            grass[j].position.set(100*Math.random() +5,0,100*Math.random())
+            grass[j].position.set(180*Math.random() +5,0,200*Math.random())
             this.scene.add(grass[j]);
+          }
+        }
+       }
+
+  });
+
+}
+
+_LoadRockModel() {
+  let rock = [];
+  const loader = new GLTFLoader();
+
+  loader.load('./resources/rock/scene.gltf', (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+        gltf.scene.scale.set(5,5,5);
+       // console.log(gltf)
+       this.scene.add(gltf.scene);
+       for(let i = 0; i<100; i++) {
+       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+        rock.push(gltf.scene.clone());
+        if(i == 99) {
+          for(let j = 0; j<rock.length;j++) {
+            rock[j].position.set(180*Math.random() +5,0,200*Math.random())
+            rock[j].scale.set(0.4, 0.4, 0.4);
+            this.scene.add(rock[j]);
           }
         }
        }
