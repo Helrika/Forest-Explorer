@@ -11,7 +11,7 @@ import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
 import {rainFx} from './rain.js';
-
+import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 
 
 
@@ -72,7 +72,7 @@ class loadedWorld {
       // orbitControls.minDistance = 25
       // orbitControls.maxDistance = 155
       // orbitControls.enablePan = false
-      // orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
+      // orbitControls.maxPolarAngle = 0;
       // orbitControls.update();
 
       this._RAF();
@@ -274,10 +274,11 @@ _LoadGrassModel() {
   ////////////////////////////////////////////////////////////////////
 
   InitializeCamera() {
+    
     //put Camera elements in here!
     this.fpsCamera = new FirstPersonCamera(this.camera, this.clock, this.player,this.boxes, this.playerBB, this.plane1BB, this.objectlist);
    // this.collisions = new collsionDetect(this.camera, this.clock, this.player, this.boxes, this.playerBB);
-
+    
   }
 
   InitializeLights() {

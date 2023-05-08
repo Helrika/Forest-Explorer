@@ -5,6 +5,7 @@ const KEYS = {
     'w': 87,
     'd': 68,
     'space': 32,
+    'enter': 13,
   };
   
   function clamp(x, a, b) {
@@ -226,6 +227,7 @@ export class InputController {
       this.camera.quaternion.copy(this.rotation);
      //console.log(this.translation);
      this.camera.position.copy(this.translation);
+     
 
      this.player.quaternion.copy(this.rotation);
      //console.log(this.translation);
