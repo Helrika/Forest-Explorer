@@ -409,26 +409,28 @@ _LoadGrassModel() {
     }
   }
   _loadClouds() {
+    const mapLoader = new THREE.TextureLoader();
+    const cloudText = mapLoader.load('resources/Smoke-Transparent.png');
     this.cloudGeo = new THREE.PlaneGeometry(500,500);
     this.cloudMat = new THREE.MeshLambertMaterial({
-      map: this.textures,
+      map: cloudText,
       transparent: true,
       alphaTest: 0.5,
       // blending: THREE.CustomBlending,
       // blendSrc: THREE.OneFactor,
       // blendDst: THREE.OneMinusSrcAlphaFactor,
     });
-    for(let i =0; i<25;i++) {
+    for(let i =0; i<105;i++) {
         this.cloud = new THREE.Mesh(this.cloudGeo, this.cloudMat);
         this.cloud.position.set(
           Math.random()* 1000 -200, 
-          200,
+          Math.random() *100 +200,
           Math.random()* 1000 -450
         );
         this.cloud.rotation.set(
-          1.16,
-          -0.12,
-          Math.random()*360
+          Math.PI/2,
+          0,
+          0
         );
         this.cloud.material.opacity = 0.6;
         this.cloudsArr.push(this.cloud);
@@ -474,7 +476,7 @@ _LoadGrassModel() {
     this.rain = new THREE.Points(this.rainGeo,this.rainMat);
     this.scene.add(this.rain);
 
-    this.rainDown = new rainFx(this.cloudArr, this.flash, this.rainGeo, this.vertices);
+    this.rainDown = new rainFx(this.cloudsArr, this.flash, this.rainGeo, this.vertices);
 
   }
 
