@@ -11,6 +11,7 @@ import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
 //import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
 import {rainFx} from './rain.js';
+import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 
 
@@ -483,10 +484,8 @@ _LoadRockModel() {
         this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
         this.horizonLight.position.set(0, 1, 0.5);
         this.scene.add(this.horizonLight);
-        this.top = true;
-        this.right = false;
-        this.bot = false;
-        this.left = false;
+        this.moveLight = new dayNightCycle(this.dirLight,this.horizonLight);
+
 
   }
 
@@ -673,62 +672,7 @@ _LoadRockModel() {
           if (this.previousRAF === null) {
             this.previousRAF = t;
           }
-    
-          var speed = 0.01;
-          //this.flashLight.position = this.camera.position;
-
-          if (this.top == true){
-            this.horizonLight.position.x += 1 * speed;
-            this.horizonLight.position.y -= 1 * speed;
-            if (this.horizonLight.position.x >= 1 && this.horizonLight.position.y <= 0){
-              this.top = false;
-              this.right = true;
-            }
-          } else if (this.right == true){
-            this.horizonLight.position.x -= 1 * speed;
-            this.horizonLight.position.y -= 1 * speed;
-            if (this.horizonLight.position.x <= 0 && this.horizonLight.position.y <= -1){
-              this.right = false;
-              this.bot = true;
-            }
-          } else if (this.bot == true){
-            this.horizonLight.position.x -= 1 * speed;
-            this.horizonLight.position.y += 1 * speed;
-            if (this.horizonLight.position.x <= -1 && this.horizonLight.position.y >= 0){
-              this.bot = false;
-              this.left = true;
-            }
-          } else if (this.left == true){
-            this.horizonLight.position.x += 1 * speed;
-            this.horizonLight.position.y += 1 * speed;
-            if (this.horizonLight.position.x <= 0 && this.horizonLight.position.y >= 1){
-              this.left = false;
-              this.top = true;
-            }
-          }
-
-          if (this.top == true){
-            this.dirLight.position.x += 100 * speed;
-            this.dirLight.position.y -= 100 * speed;
-          } else if (this.right == true){
-            this.dirLight.position.x -= 100 * speed;
-            this.dirLight.position.y -= 100 * speed;
-          } else if (this.bot == true){
-            this.dirLight.position.x -= 100 * speed;
-            this.dirLight.position.y += 100 * speed;
-          } else if (this.left == true){
-            this.dirLight.position.x += 100 * speed;
-            this.dirLight.position.y += 100 * speed;
-          }
-          
-          // console.log(this.horizonLight.position);
-          // console.log(this.top);
-          // console.log(this.right);
-          // console.log(this.bot);
-          // console.log(this.left);
-
-          // console.log(this.dirLight.position);
-
+          this.moveLight.Update();
           this._RAF();
           this.dragObject();
           this.rainDown.Update();
