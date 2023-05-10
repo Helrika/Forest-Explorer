@@ -20,13 +20,14 @@ import * as THREE from 'three';
                 //console.log(element.rotation.z)
               });
               //console.log(this.flash.power);
-              if(Math.random() >0.93 || this.flash.power >100) {
+              if(Math.random() >0.99 || this.flash.power >100) {
                 if(this.flash.power <10) {
                   this.flash.intensity = 1;
+                  this.flash.power = 50 +Math.random() *300;
                  // console.log(true);
                   this.flash.position.set(
                     Math.random() * 400,
-                    300 + Math.random() * 200,
+                    200,
                     Math.random() * 400 -100,
                   );
                 } else {
