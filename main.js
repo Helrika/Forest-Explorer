@@ -448,23 +448,45 @@ _LoadRockModel() {
   InitializeLights() {
     //lighting
     //put lights here
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
+        //this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
-    let dirLight = new THREE.DirectionalLight(0xffffff, 1)
-    dirLight.position.set(- 60, 100, - 10);
-    dirLight.castShadow = true;
-    dirLight.shadow.camera.top = 50;
-    dirLight.shadow.camera.bottom = - 50;
-    dirLight.shadow.camera.left = - 50;
-    dirLight.shadow.camera.right = 50;
-    dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 200;
-    dirLight.shadow.mapSize.width = 4096;
-    dirLight.shadow.mapSize.height = 4096;
-    this.scene.add(dirLight);
-
-    dirLight = new THREE.AmbientLight(0x101010);
-    this.scene.add(dirLight);
+        this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        this.dirLight.position.set(0, 100, 0);
+        this.dirLight.castShadow = true;
+        this.dirLight.shadow.camera.top = 50;
+        this.dirLight.shadow.camera.bottom = - 50;
+        this.dirLight.shadow.camera.left = - 50;
+        this.dirLight.shadow.camera.right = 50;
+        this.dirLight.shadow.camera.near = 0.1;
+        this.dirLight.shadow.camera.far = 200;
+        this.dirLight.shadow.mapSize.width = 4096;
+        this.dirLight.shadow.mapSize.height = 4096;
+        this.scene.add(this.dirLight);
+    
+        this.ambLight = new THREE.AmbientLight(0x101010, 0.5);
+        this.scene.add(this.ambLight);
+    
+        this.flashLight = new THREE.SpotLight(0xffffff, 1.0, 25, Math.PI / 4.0, 0.5, 1);
+        this.flashLight.position.set(0, 10, 0);
+        this.flashLight.rotation.set(0, 270, 0);
+    
+        this.scene.add(this.flashLight);
+        this.scene.add(this.flashLight.target);
+    
+        this.camera.add(this.flashLight);
+        this.camera.add(this.flashLight.target);
+        // this.camera.add(this.flashLight);
+        // this.camera.add(this.flashLight.target);
+        //this.camera.add(flashLight.target);
+        //flashLight.target.position.z = -3;
+    
+        this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
+        this.horizonLight.position.set(0, 1, 0.5);
+        this.scene.add(this.horizonLight);
+        this.top = true;
+        this.right = false;
+        this.bot = false;
+        this.left = false;
 
   }
 
@@ -652,6 +674,61 @@ _LoadRockModel() {
             this.previousRAF = t;
           }
     
+          var speed = 0.01;
+          //this.flashLight.position = this.camera.position;
+
+          if (this.top == true){
+            this.horizonLight.position.x += 1 * speed;
+            this.horizonLight.position.y -= 1 * speed;
+            if (this.horizonLight.position.x >= 1 && this.horizonLight.position.y <= 0){
+              this.top = false;
+              this.right = true;
+            }
+          } else if (this.right == true){
+            this.horizonLight.position.x -= 1 * speed;
+            this.horizonLight.position.y -= 1 * speed;
+            if (this.horizonLight.position.x <= 0 && this.horizonLight.position.y <= -1){
+              this.right = false;
+              this.bot = true;
+            }
+          } else if (this.bot == true){
+            this.horizonLight.position.x -= 1 * speed;
+            this.horizonLight.position.y += 1 * speed;
+            if (this.horizonLight.position.x <= -1 && this.horizonLight.position.y >= 0){
+              this.bot = false;
+              this.left = true;
+            }
+          } else if (this.left == true){
+            this.horizonLight.position.x += 1 * speed;
+            this.horizonLight.position.y += 1 * speed;
+            if (this.horizonLight.position.x <= 0 && this.horizonLight.position.y >= 1){
+              this.left = false;
+              this.top = true;
+            }
+          }
+
+          if (this.top == true){
+            this.dirLight.position.x += 100 * speed;
+            this.dirLight.position.y -= 100 * speed;
+          } else if (this.right == true){
+            this.dirLight.position.x -= 100 * speed;
+            this.dirLight.position.y -= 100 * speed;
+          } else if (this.bot == true){
+            this.dirLight.position.x -= 100 * speed;
+            this.dirLight.position.y += 100 * speed;
+          } else if (this.left == true){
+            this.dirLight.position.x += 100 * speed;
+            this.dirLight.position.y += 100 * speed;
+          }
+          
+          // console.log(this.horizonLight.position);
+          // console.log(this.top);
+          // console.log(this.right);
+          // console.log(this.bot);
+          // console.log(this.left);
+
+          // console.log(this.dirLight.position);
+
           this._RAF();
           this.dragObject();
           this.rainDown.Update();
