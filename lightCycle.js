@@ -17,7 +17,7 @@ import * as THREE from 'three';
     Update() {
     
       
-        var speed = 0.001;
+        var speed = 0.01;
         //this.flashLight.position = this.camera.position;
 
         if (this.top == true){
@@ -51,17 +51,17 @@ import * as THREE from 'three';
         }
 
         if (this.top == true){
-          this.dirLight.position.x += 100 * speed;
-          this.dirLight.position.y -= 100 * speed;
+          this.dirLight.position.x += 1000 * speed;
+          this.dirLight.position.y -= 1000 * speed;
         } else if (this.right == true){
-          this.dirLight.position.x -= 100 * speed;
-          this.dirLight.position.y -= 100 * speed;
+          this.dirLight.position.x -= 1000 * speed;
+          this.dirLight.position.y -= 1000 * speed;
         } else if (this.bot == true){
-          this.dirLight.position.x -= 100 * speed;
-          this.dirLight.position.y += 100 * speed;
+          this.dirLight.position.x -= 1000 * speed;
+          this.dirLight.position.y += 1000 * speed;
         } else if (this.left == true){
-          this.dirLight.position.x += 100 * speed;
-          this.dirLight.position.y += 100 * speed;
+          this.dirLight.position.x += 1000 * speed;
+          this.dirLight.position.y += 1000 * speed;
         }
       
     }

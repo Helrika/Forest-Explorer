@@ -172,7 +172,7 @@ class loadedWorld {
     this._LoadRockModel();
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
-    const material = new THREE.MeshBasicMaterial({color: 0xfff00});
+    const material = new THREE.MeshBasicMaterial({color: 0xfffff});
     const sphere = new THREE.Mesh(geometry, material);
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
@@ -460,7 +460,7 @@ _LoadRockModel() {
         //this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
         this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        this.dirLight.position.set(0, 100, 0);
+        this.dirLight.position.set(0, 1000, 0);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.top = 50;
         this.dirLight.shadow.camera.bottom = - 50;
