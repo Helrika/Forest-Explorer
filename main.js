@@ -14,6 +14,7 @@ import {rainFx} from './rain.js';
 import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 import { cloudScene } from './clouds.js';
+import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 
 
 class loadedWorld {
@@ -25,6 +26,7 @@ class loadedWorld {
       this.InitializeCamera();
       this.raycast();
       this._loadClouds();
+    
 
    
   }
@@ -56,6 +58,7 @@ class loadedWorld {
       this.boxes = [];
       this.clock=new THREE.Clock();
       this.objectlist =[];
+      this.arr = ['./resources/tree2/tree.gltf','./resources/grass/grass2.gltf','./resources/rock/rock.gltf'];
 
       //camera
       const fov = 100;
@@ -167,9 +170,11 @@ class loadedWorld {
       b.setFromObject(meshes[i]);
       this.objects_.push(b);
     }
-    this._LoadTreeModel();
-    this._LoadGrassModel();
-    this._LoadRockModel();
+    console.log(this.arr[0]);
+    this._LoadTreeModel(this.arr[0], 100, 2);
+    this._LoadTreeModel(this.arr[1], 300, 10);
+    this._LoadTreeModel(this.arr[2], 300, 0.5);
+    //this._LoadRockModel();
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
     const material = new THREE.MeshBasicMaterial({color: 0xfffff});
@@ -182,221 +187,92 @@ class loadedWorld {
   }
 
 
-_LoadTreeModel() {
-
-  //CREATES CORDS
-
-  let spaceX = 0;
-  let spaceZ = 0;
-  let count = 0;
-  let index = 0;
-  let xCord = [];
-  let zCord = [];
-  while (count < 11){
-    for (let i = 0; i < 11; i++){
-      xCord[index] = spaceX + 15*Math.random();
-      //chguucwsuhwcu
-      ///ghxwyhgxwygxwygw
-      zCord[index] = spaceZ + 15*Math.random();
-      spaceZ = spaceZ + 20;
-      index = index + 1;
-    }
-    count = count + 1;
-    spaceX = spaceX + 20;
-    spaceZ = 0;
+  something(geo2) {
+    geo2.translate(Math.random() * 1,0,Math.random()*1);
+    return geo2;
   }
+_LoadTreeModel(name, amount, scale) {
   
-  ////////////////
-
-
-  //RANDOMIZES
-
-  let xCord2 = [];
-  let zCord2 = [];
-
-  const arr = [];
-
-  for (let i = 0; i <= 101; i++) {
-    arr.push(i);
-  }
-
-  arr.sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < xCord.length; i++){
-    xCord2.push(xCord[arr[i]]);
-    zCord2.push(zCord[arr[i]]);
-  }
-
-  /////////////////
-
-
-  //LOADS IN TREE 1
+  var dummy = new THREE.Object3D();
+  var matrix = new THREE.Matrix4();
+  var position = new THREE.Vector3();
+  // let geo = new THREE.BufferGeometry();
   let trees = [];
   const loader = new GLTFLoader();
-  loader.load('./resources/tree2/scene.gltf', (gltf) => {
+  loader.load(name, (gltf) => {
       gltf.scene.traverse(c => {
           c.castShadow = true;
           
         });
+        //////console.log(gltf.scene.children[0]);
+        var material = gltf.scene.children[0].material;
+        let geo = new THREE.BoxGeometry(0,0,0);
+        let geo2 = gltf.scene.children[0].geometry;
 
-       // console.log(gltf)
-       this.scene.add(gltf.scene);
-       for(let i = 0; i<41; i++) {
-       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-        trees.push(gltf.scene.clone());
-        
-        if(i == 40) {
-          for(let j = 0; j<trees.length;j++) {
-            //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
-            trees[j].position.set(xCord2[j],0,zCord2[j])
-            this.scene.add(trees[j]);
-          }
-        }
-       }
+        var cluster = new THREE.InstancedMesh( 
+          geo2,
+          material, 
+          amount, //instance count 
+          false, //is it dynamic 
+          false,  //does it have color 
+          true,  //uniform scale
+        );
+        this.scene.add( cluster );
 
-  });
+		
+var i = 0;
+var offset = ( amount - 1 ) / 2;
+for ( var x = 0; x < amount; x ++ ) {
 
-  /////////////////
+  for ( var y = 0; y < amount; y ++ ) {
 
+    for ( var z = 0; z < amount; z ++ ) {
+      dummy.scale.setScalar(scale);
+      dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI)*100 );
+      dummy.updateMatrix();
 
-  //LOADS IN TREE 2
+      cluster.setMatrixAt( i ++, dummy.matrix );
 
-  loader.load('./resources/tree/scene.gltf', (gltf) => {
-    gltf.scene.traverse(c => {
-        c.castShadow = true;
-        
-      });
+    }
 
-     // console.log(gltf)
-     this.scene.add(gltf.scene);
-     for(let i = 0; i<41; i++) {
-     // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-      trees.push(gltf.scene.clone());
-      
-      if(i == 40) {
-        for(let j = 39; j<trees.length;j++) {
-          //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
-          trees[j].position.set(xCord2[j],0,zCord2[j])
-          this.scene.add(trees[j]);
-        }
-      }
-     }
-
-  });
-
-  /////////////////
-
-
-  //LOADS IN TREE 3
-
-  loader.load('./resources/deadtree/scene.gltf', (gltf) => {
-    gltf.scene.traverse(c => {
-        c.castShadow = true;
-        
-      });
-
-     // console.log(gltf)
-     this.scene.add(gltf.scene);
-     for(let i = 0; i<21; i++) {
-     // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-      trees.push(gltf.scene.clone());
-      
-      if(i == 20) {
-        for(let j = 79; j<trees.length;j++) {
-          //trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
-          trees[j].position.set(xCord2[j],0,zCord2[j])
-          this.scene.add(trees[j]);
-        }
-      }
-     }
-
-  });
-
-  /////////////////
+  }
 
 }
 
-//old version of tree model done by helrika
-_LoadTreeModelOgHelVer() {
-  let trees = [];
-  const loader = new GLTFLoader();
-  loader.load('./resources/tree/scene.gltf', (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
+  });
+
+
+}
+
+
+
+// _LoadRockModel() {
+//   let rock = [];
+//   const loader = new GLTFLoader();
+
+//   loader.load('./resources/rock/scene.gltf', (gltf) => {
+//       gltf.scene.traverse(c => {
+//           c.castShadow = true;
           
-        });
-       // console.log(gltf)
-       this.scene.add(gltf.scene);
-       for(let i = 0; i<101; i++) {
-       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-        trees.push(gltf.scene.clone());
-        
-        if(i == 100) {
-          for(let j = 0; j<trees.length;j++) {
-            trees[j].position.set(100*Math.random() +5,0,100*Math.random()+5)
-            this.scene.add(trees[j]);
-          }
-        }
-       }
+//         });
+//         gltf.scene.scale.set(5,5,5);
+//        // ////console.log(gltf)
+//        this.scene.add(gltf.scene);
+//        for(let i = 0; i<100; i++) {
+//        // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
+//         rock.push(gltf.scene.clone());
+//         if(i == 99) {
+//           for(let j = 0; j<rock.length;j++) {
+//             rock[j].position.set(180*Math.random() +5,0,200*Math.random())
+//             rock[j].scale.set(0.4, 0.4, 0.4);
+//             this.scene.add(rock[j]);
+//           }
+//         }
+//        }
 
-  });
+//   });
 
-}
-
-_LoadGrassModel() {
-  let grass = [];
-  const loader = new GLTFLoader();
-
-  loader.load('./resources/grass/scene.gltf', (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
-          
-        });
-        gltf.scene.scale.set(5,5,5);
-       // console.log(gltf)
-       this.scene.add(gltf.scene);
-       for(let i = 0; i<100; i++) {
-       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-        grass.push(gltf.scene.clone());
-        if(i == 99) {
-          for(let j = 0; j<grass.length;j++) {
-            grass[j].position.set(180*Math.random() +5,0,200*Math.random())
-            this.scene.add(grass[j]);
-          }
-        }
-       }
-
-  });
-
-}
-
-_LoadRockModel() {
-  let rock = [];
-  const loader = new GLTFLoader();
-
-  loader.load('./resources/rock/scene.gltf', (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
-          
-        });
-        gltf.scene.scale.set(5,5,5);
-       // console.log(gltf)
-       this.scene.add(gltf.scene);
-       for(let i = 0; i<100; i++) {
-       // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-        rock.push(gltf.scene.clone());
-        if(i == 99) {
-          for(let j = 0; j<rock.length;j++) {
-            rock[j].position.set(180*Math.random() +5,0,200*Math.random())
-            rock[j].scale.set(0.4, 0.4, 0.4);
-            this.scene.add(rock[j]);
-          }
-        }
-       }
-
-  });
-
-}
+// }
 
   ////////////////////////////////////////////////////////////////////
   //////////// change any material loading here
@@ -554,7 +430,7 @@ _LoadRockModel() {
     window.addEventListener("click",  (event) => {
   
       if(this.draggable[0]) {
-        console.log('drag is gonezos '+ this.draggable[0].userData.name)
+        ////console.log('drag is gonezos '+ this.draggable[0].userData.name)
         this.draggable.pop();
         return;
       }
@@ -564,10 +440,10 @@ _LoadRockModel() {
   
       this.raycaster.setFromCamera( this.clickMouse, this.camera );
       this.found = this.raycaster.intersectObjects( this.scene.children);
-      console.log(this.found[0])
+      ////console.log(this.found[0])
       if((this.found.length>0 && this.found[0].object.userData.draggable)) {
         this.draggable.push(this.found[0].object);
-        console.log(this.found[0].object.userData.name +" is found");
+        ////console.log(this.found[0].object.userData.name +" is found");
     
       } else if((this.found.length>0 && this.found[0].object.parent.userData.draggable)) {
         this.draggable.push(this.found[0].object.parent);
@@ -605,7 +481,7 @@ _LoadRockModel() {
   _loadClouds() {
     this.CloudScene = new cloudScene();
     this.scene.add(this.CloudScene);
-    console.log(this.CloudScene);
+    ////console.log(this.CloudScene);
     this.rainDown = new rainFx(this.CloudScene);
 
   }
