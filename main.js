@@ -13,7 +13,7 @@ import {FirstPersonCamera} from './fps.js';
 import {rainFx} from './rain.js';
 import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
-
+import { cloudScene } from './clouds.js';
 
 
 class loadedWorld {
@@ -595,74 +595,10 @@ _LoadRockModel() {
     }
   }
   _loadClouds() {
-    const mapLoader = new THREE.TextureLoader();
-    const cloudText = mapLoader.load('resources/Smoke-Transparent.png');
-    this.cloudGeo = new THREE.PlaneGeometry(500,500);
-    this.cloudMat = new THREE.MeshLambertMaterial({
-      map: cloudText,
-      transparent: true,
-      alphaTest: 0.5,
-      // blending: THREE.CustomBlending,
-      // blendSrc: THREE.OneFactor,
-      // blendDst: THREE.OneMinusSrcAlphaFactor,
-    });
-    for(let i =0; i<105;i++) {
-        this.cloud = new THREE.Mesh(this.cloudGeo, this.cloudMat);
-        this.cloud.position.set(
-          Math.random()* 1000 -200, 
-          Math.random() *100 +200,
-          Math.random()* 1000 -450
-        );
-        this.cloud.rotation.set(
-          Math.PI/2,
-          0,
-          0
-        );
-        this.cloud.material.opacity = 0.6;
-        this.cloudsArr.push(this.cloud);
-        this.scene.add(this.cloud);
-    }
-
-
-
-    this.flash = new THREE.PointLight(0x062d89,30,500,1.7);
-    this.flash.position.set(200,300,100);
-    this.scene.add(this.flash);
-
-
-    //this.rainBuff = new THREE.BufferGeometry();
-    //this.rainGeo = new THREE.BoxGeometry();
-    //console.log(this.rainGeo)
-    this.vertices = [];
-    for(let i = 0; i <this.rainCount; i++) {
-      this.rainDrop = new THREE.Vector3(
-        Math.random() * 400 -200,
-        Math.random() * 500 -250,
-        Math.random() * 400 -200,
-      );
-      this.rainDrop.velocity = {};
-      this.rainDrop.velocity = 0;
-      this.vertices.push(this.rainDrop);
-      if(i == this.rainCount-1) {
-        this.rainGeo = new THREE.BufferGeometry().setFromPoints(this.vertices);
-        
-        
-     //this.rainGeo.geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( this.vertices, 3 ) );
-      //this.rainGeo.geometry.attributes.position.needsUpdate = true;
-      }
-
-    }
-    this.drops = this.rainGeo.getAttribute( 'position' );
-  
-    this.rainMat = new THREE.PointsMaterial({
-      color:0xaaaaaa,
-      size: 0.1,
-      transparent: true
-    })
-    this.rain = new THREE.Points(this.rainGeo,this.rainMat);
-    this.scene.add(this.rain);
-
-    this.rainDown = new rainFx(this.cloudsArr, this.flash, this.rainGeo, this.vertices);
+    this.CloudScene = new cloudScene();
+    this.scene.add(this.CloudScene);
+    console.log(this.CloudScene);
+    this.rainDown = new rainFx(this.CloudScene);
 
   }
 

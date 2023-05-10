@@ -1,24 +1,22 @@
 import * as THREE from 'three';
 
   export class rainFx {
-    constructor(cloudArr, flash, rainGeo, vertices) {
-      this.cloudsArr = cloudArr;
-      this.flash = flash;
-      this.rainGeo = rainGeo;
-      this.drops = this.rainGeo.getAttribute( 'position' );
-      this.vertices = vertices;
+    constructor(clouds) {
+      this.cloudsArr = clouds.children;
 
-     // this.objects_ = objects;
+      this.flash = clouds.children[clouds.children.length-2];
+      this.rainGeo = clouds.children[clouds.children.length-1].geometry;
+      this.drops = this.rainGeo.getAttribute( 'position' );
+      this.vertices = clouds.userData.vertices;
+
     }
 
-    
-    //look in the direction we want
     Update() {
-    
-      
-            
-            this.cloudsArr.forEach(element => {
+            this.cloudsArr.forEach((element, index) => {
+              if(index <this.cloudsArr.length-2) {
                 element.rotation.z +=0.001;
+              }
+                
                 //console.log(element.rotation.z)
               });
               //console.log(this.flash.power);
@@ -37,8 +35,6 @@ import * as THREE from 'three';
                 }
                 
               }
-        
-        
           if(this.drops && this.vertices) {
             //this.check = true;
             for(let i = 0; i < this.drops.count; i++){
