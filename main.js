@@ -88,12 +88,12 @@ class loadedWorld {
     //this is a place holder. edit all the scene elements here. then remove the placeholder assets
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-      './resources/skybox/posx.jpg',
-      './resources/skybox/negx.jpg',
-      './resources/skybox/posy.jpg',
-      './resources/skybox/negy.jpg',
-      './resources/skybox/posz.jpg',
-      './resources/skybox/negz.jpg',
+      // './resources/skybox/posx.jpg',
+      // './resources/skybox/negx.jpg',
+      // './resources/skybox/posy.jpg',
+      // './resources/skybox/negy.jpg',
+      // './resources/skybox/posz.jpg',
+      // './resources/skybox/negz.jpg'a,
   ]);
   const loader1 = new THREE.TextureLoader();
   const height = loader1.load([
@@ -169,7 +169,14 @@ class loadedWorld {
     }
     this._LoadTreeModel();
     this._LoadGrassModel();
-    this._LoadRockModel()
+    this._LoadRockModel();
+
+    const geometry = new THREE.SphereGeometry(300, 32, 16);
+    const material = new THREE.MeshBasicMaterial({color: 0xfff00});
+    const sphere = new THREE.Mesh(geometry, material);
+    this.scene.add(sphere);
+
+    this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 30);
 
   }
 
