@@ -27,7 +27,7 @@ import * as THREE from 'three';
                  // console.log(true);
                   this.flash.position.set(
                     Math.random() * 400,
-                    200,
+                    50,
                     Math.random() * 400 -100,
                   );
                 } else {
