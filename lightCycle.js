@@ -17,7 +17,7 @@ import * as THREE from 'three';
     Update() {
     
       
-        var speed = 0.01;
+        var speed = 0.001;
         //this.flashLight.position = this.camera.position;
 
         if (this.top == true){

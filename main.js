@@ -177,7 +177,7 @@ class loadedWorld {
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
 
-    this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 30);
+    this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
 
   }
 
