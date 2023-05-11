@@ -169,9 +169,9 @@ export class InputController {
        }
    
       this.UpdateTranslation(timeElapsedS);
-      this.UpdateCollisions(timeElapsedS);
+     // this.UpdateCollisions(timeElapsedS);
      
-      this.checkFortarget();
+     // this.checkFortarget();
   
       // if(this.camera.position.y >= this.maxJumpHeight) {
       //   this.canJump = false;
