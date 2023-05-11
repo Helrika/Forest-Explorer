@@ -108,6 +108,7 @@ class loadedWorld {
 
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    this.grassmat = this.loadMaterial_("Grass_001_", 110);
     const checkerboard = mapLoader.load('resources/grass.png');
     checkerboard.anisotropy = maxAnisotropy;
     checkerboard.wrapS = THREE.RepeatWrapping;
@@ -117,8 +118,7 @@ class loadedWorld {
 
     const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
-        new THREE.MeshStandardMaterial({map: checkerboard,
-        displacementMap: height}));
+        this.grassmat);
     plane.castShadow = false;
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
@@ -133,7 +133,7 @@ class loadedWorld {
 
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(4, 4, 4),
-      this.loadMaterial_('vintage-tile1_', 0.2));
+      this.loadMaterial_('Stylized_Grass_003_', 0.2));
     box.position.set(10, 2, 0);
     box.castShadow = true;
     box.receiveShadow = true;
@@ -173,7 +173,7 @@ class loadedWorld {
     console.log(this.arr[0]);
     this._LoadTreeModel(this.arr[0], 100, 2);
     this._LoadTreeModel(this.arr[1], 300, 10);
-    this._LoadTreeModel(this.arr[2], 300, 0.5);
+    this._LoadTreeModel(this.arr[2], 300, 0.3);
     //this._LoadRockModel();
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
@@ -282,36 +282,50 @@ for ( var x = 0; x < amount; x ++ ) {
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
 
-    const metalMap = mapLoader.load('resources/freepbr/' + name + 'metallic.png');
-    metalMap.anisotropy = maxAnisotropy;
-    metalMap.wrapS = THREE.RepeatWrapping;
-    metalMap.wrapT = THREE.RepeatWrapping;
-    metalMap.repeat.set(tiling, tiling);
+    // const metalMap = mapLoader.load('resources/textures/' + name + 'metallic.png');
+    // metalMap.anisotropy = maxAnisotropy;
+    // metalMap.wrapS = THREE.RepeatWrapping;
+    // metalMap.wrapT = THREE.RepeatWrapping;
+    // metalMap.repeat.set(tiling, tiling);
 
-    const albedo = mapLoader.load('resources/freepbr/' + name + 'albedo.png');
+    const albedo = mapLoader.load('resources/textures/' + name + 'basecolor.jpg');
     albedo.anisotropy = maxAnisotropy;
     albedo.wrapS = THREE.RepeatWrapping;
     albedo.wrapT = THREE.RepeatWrapping;
     albedo.repeat.set(tiling, tiling);
     albedo.encoding = THREE.sRGBEncoding;
 
-    const normalMap = mapLoader.load('resources/freepbr/' + name + 'normal.png');
+    const normalMap = mapLoader.load('resources/textures/' + name + 'normal.jpg');
     normalMap.anisotropy = maxAnisotropy;
     normalMap.wrapS = THREE.RepeatWrapping;
     normalMap.wrapT = THREE.RepeatWrapping;
     normalMap.repeat.set(tiling, tiling);
 
-    const roughnessMap = mapLoader.load('resources/freepbr/' + name + 'roughness.png');
+    const roughnessMap = mapLoader.load('resources/textures/' + name + 'roughness.jpg');
+    roughnessMap.anisotropy = maxAnisotropy;
+    roughnessMap.wrapS = THREE.RepeatWrapping;
+    roughnessMap.wrapT = THREE.RepeatWrapping;
+    roughnessMap.repeat.set(tiling, tiling);
+
+    const displacementMap = mapLoader.load('resources/textures/' + name + 'height.png');
+    roughnessMap.anisotropy = maxAnisotropy;
+    roughnessMap.wrapS = THREE.RepeatWrapping;
+    roughnessMap.wrapT = THREE.RepeatWrapping;
+    roughnessMap.repeat.set(tiling, tiling);
+
+    const occMap = mapLoader.load('resources/textures/' + name + 'OCC.jpg');
     roughnessMap.anisotropy = maxAnisotropy;
     roughnessMap.wrapS = THREE.RepeatWrapping;
     roughnessMap.wrapT = THREE.RepeatWrapping;
     roughnessMap.repeat.set(tiling, tiling);
 
     const material = new THREE.MeshStandardMaterial({
-      metalnessMap: metalMap,
+     // metalnessMap: metalMap,
       map: albedo,
       normalMap: normalMap,
       roughnessMap: roughnessMap,
+      //displacementMap: displacementMap,
+     // occulisonMap: occMap,
     });
 
     return material;
