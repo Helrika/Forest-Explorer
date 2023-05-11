@@ -58,7 +58,7 @@ class loadedWorld {
       this.boxes = [];
       this.clock=new THREE.Clock();
       this.objectlist =[];
-      this.arr = ['./resources/tree2/tree.gltf','./resources/grass/grass2.gltf','./resources/rock/rock.gltf'];
+      this.arr = ['./resources/tree2/tree.gltf','./resources/grass/grass2.gltf','./resources/rock/rock.gltf','./resources/treetest.gltf'];
 
       //camera
       const fov = 100;
@@ -170,10 +170,11 @@ class loadedWorld {
       b.setFromObject(meshes[i]);
       this.objects_.push(b);
     }
-    console.log(this.arr[0]);
-    this._LoadTreeModel(this.arr[0], 100, 2);
-    this._LoadTreeModel(this.arr[1], 300, 10);
-    this._LoadTreeModel(this.arr[2], 300, 0.3);
+    //console.log(this.arr[0]);
+   // this._LoadTreeModel(this.arr[0], 100, 2,1);
+    //this._LoadTreeModel(this.arr[1], 300, 10,1);
+   // this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+    this._LoadTreeModel(this.arr[3],1,1,2);
     //this._LoadRockModel();
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
@@ -191,7 +192,7 @@ class loadedWorld {
     geo2.translate(Math.random() * 1,0,Math.random()*1);
     return geo2;
   }
-_LoadTreeModel(name, amount, scale) {
+_LoadTreeModel(name, amount, scale, repeat) {
   
   var dummy = new THREE.Object3D();
   var matrix = new THREE.Matrix4();
@@ -204,40 +205,98 @@ _LoadTreeModel(name, amount, scale) {
           c.castShadow = true;
           
         });
-        //////console.log(gltf.scene.children[0]);
-        var material = gltf.scene.children[0].material;
-        let geo = new THREE.BoxGeometry(0,0,0);
-        let geo2 = gltf.scene.children[0].geometry;
+        //console.log(gltf.scene.children[0].children[0]);
+        if(repeat <2) {
+          var material = gltf.scene.children[0].material;
+          let geo = new THREE.BoxGeometry(0,0,0);
+          let geo2 = gltf.scene.children[0].geometry;
+  
+          var cluster = new THREE.InstancedMesh( 
+            geo2,
+            material, 
+            amount, //instance count 
+            false, //is it dynamic 
+            false,  //does it have color 
+            true,  //uniform scale
+          );
+          this.scene.add( cluster );
+          var i = 0;
+          var offset = ( amount - 1 ) / 2;
+          for ( var x = 0; x < amount; x ++ ) {
 
-        var cluster = new THREE.InstancedMesh( 
-          geo2,
-          material, 
-          amount, //instance count 
-          false, //is it dynamic 
-          false,  //does it have color 
-          true,  //uniform scale
-        );
-        this.scene.add( cluster );
+            for ( var y = 0; y < amount; y ++ ) {
+
+              for ( var z = 0; z < amount; z ++ ) {
+                dummy.scale.setScalar(scale);
+                //dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100);
+                dummy.updateMatrix();
+
+                cluster.setMatrixAt( i ++, dummy.matrix );
+
+              }
+
+            }
+
+          }
+        } else {
+          var geoGroup = [];
+          var matGroup = [];
+          var clusterGroup = [];
+          console.log(gltf.scene.children[0].children.length)
+          for(let i = 0; i <gltf.scene.children[0].children.length; i++) {
+              geoGroup.push(gltf.scene.children[0].children[i].geometry);
+              matGroup.push(gltf.scene.children[0].children[i].material);
+              var cluster = new THREE.InstancedMesh( 
+                gltf.scene.children[0].children[i].geometry,
+                gltf.scene.children[0].children[i].material, 
+                amount, //instance count 
+                false, //is it dynamic 
+                false,  //does it have color 
+                true,  //uniform scale
+              );
+              clusterGroup.push(cluster);
+              //console.log(clusterGroup);
+              this.scene.add( clusterGroup[i] );
+          }
+
+                    var i = 0;
+          var offset = ( amount - 1 ) / 2;
+          for ( var x = 0; x < amount; x ++ ) {
+
+            for ( var y = 0; y < amount; y ++ ) {
+
+              for ( var z = 0; z < amount; z ++ ) {
+                dummy.scale.setScalar(scale);
+                dummy.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
+                dummy.updateMatrix();
+                  console.log(clusterGroup);
+                clusterGroup[0].setMatrixAt( i ++, dummy.matrix );
+                clusterGroup[0].updateMatrix();
+                clusterGroup[1].setMatrixAt( i ++,clusterGroup[0].matrix );
+
+              }
+
+            }
+
+          }
+          // var material = gltf.scene.children[0].children[0].material;
+          // let geo = new THREE.BoxGeometry(0,0,0);
+          // let geo2 = gltf.scene.children[0].children[0].geometry;
+  
+          // var cluster = new THREE.InstancedMesh( 
+          //   geo2,
+          //   material, 
+          //   amount, //instance count 
+          //   false, //is it dynamic 
+          //   false,  //does it have color 
+          //   true,  //uniform scale
+          // );
+          // //this.scene.add( cluster );
+        }
+
 
 		
-var i = 0;
-var offset = ( amount - 1 ) / 2;
-for ( var x = 0; x < amount; x ++ ) {
 
-  for ( var y = 0; y < amount; y ++ ) {
-
-    for ( var z = 0; z < amount; z ++ ) {
-      dummy.scale.setScalar(scale);
-      dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI)*100 );
-      dummy.updateMatrix();
-
-      cluster.setMatrixAt( i ++, dummy.matrix );
-
-    }
-
-  }
-
-}
 
   });
 
@@ -307,17 +366,17 @@ for ( var x = 0; x < amount; x ++ ) {
     roughnessMap.wrapT = THREE.RepeatWrapping;
     roughnessMap.repeat.set(tiling, tiling);
 
-    const displacementMap = mapLoader.load('resources/textures/' + name + 'height.png');
-    roughnessMap.anisotropy = maxAnisotropy;
-    roughnessMap.wrapS = THREE.RepeatWrapping;
-    roughnessMap.wrapT = THREE.RepeatWrapping;
-    roughnessMap.repeat.set(tiling, tiling);
+    // const displacementMap = mapLoader.load('resources/textures/' + name + 'height.png');
+    // roughnessMap.anisotropy = maxAnisotropy;
+    // roughnessMap.wrapS = THREE.RepeatWrapping;
+    // roughnessMap.wrapT = THREE.RepeatWrapping;
+    // roughnessMap.repeat.set(tiling, tiling);
 
-    const occMap = mapLoader.load('resources/textures/' + name + 'OCC.jpg');
-    roughnessMap.anisotropy = maxAnisotropy;
-    roughnessMap.wrapS = THREE.RepeatWrapping;
-    roughnessMap.wrapT = THREE.RepeatWrapping;
-    roughnessMap.repeat.set(tiling, tiling);
+    // const occMap = mapLoader.load('resources/textures/' + name + 'OCC.jpg');
+    // roughnessMap.anisotropy = maxAnisotropy;
+    // roughnessMap.wrapS = THREE.RepeatWrapping;
+    // roughnessMap.wrapT = THREE.RepeatWrapping;
+    // roughnessMap.repeat.set(tiling, tiling);
 
     const material = new THREE.MeshStandardMaterial({
      // metalnessMap: metalMap,
