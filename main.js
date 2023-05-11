@@ -171,10 +171,10 @@ class loadedWorld {
       this.objects_.push(b);
     }
     //console.log(this.arr[0]);
-   // this._LoadTreeModel(this.arr[0], 100, 2,1);
-    //this._LoadTreeModel(this.arr[1], 300, 10,1);
-   // this._LoadTreeModel(this.arr[2], 300, 0.3,1);
-    this._LoadTreeModel(this.arr[3],1,1,2);
+   this._LoadTreeModel(this.arr[0], 100, 2,1);
+    this._LoadTreeModel(this.arr[1], 300, 5,1);
+   this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+    this._LoadTreeModel(this.arr[3],100,4,2);
     //this._LoadRockModel();
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
@@ -195,6 +195,7 @@ class loadedWorld {
 _LoadTreeModel(name, amount, scale, repeat) {
   
   var dummy = new THREE.Object3D();
+  var dummy2 = new THREE.Object3D();
   var matrix = new THREE.Matrix4();
   var position = new THREE.Vector3();
   // let geo = new THREE.BufferGeometry();
@@ -207,6 +208,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
         });
         //console.log(gltf.scene.children[0].children[0]);
         if(repeat <2) {
+          console.log(repeat);
           var material = gltf.scene.children[0].material;
           let geo = new THREE.BoxGeometry(0,0,0);
           let geo2 = gltf.scene.children[0].geometry;
@@ -220,7 +222,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
             true,  //uniform scale
           );
           this.scene.add( cluster );
-          var i = 0;
+          var k = 0;
           var offset = ( amount - 1 ) / 2;
           for ( var x = 0; x < amount; x ++ ) {
 
@@ -228,10 +230,10 @@ _LoadTreeModel(name, amount, scale, repeat) {
 
               for ( var z = 0; z < amount; z ++ ) {
                 dummy.scale.setScalar(scale);
-                //dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100);
+                dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100);
                 dummy.updateMatrix();
 
-                cluster.setMatrixAt( i ++, dummy.matrix );
+                cluster.setMatrixAt( k ++, dummy.matrix );
 
               }
 
@@ -269,11 +271,15 @@ _LoadTreeModel(name, amount, scale, repeat) {
                 dummy.scale.setScalar(scale);
                 dummy.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
                 dummy.updateMatrix();
-                  console.log(clusterGroup);
-                clusterGroup[0].setMatrixAt( i ++, dummy.matrix );
-                clusterGroup[0].updateMatrix();
-                clusterGroup[1].setMatrixAt( i ++,clusterGroup[0].matrix );
+                  //console.log(clusterGroup);
+                  for(let k = 0; k<clusterGroup.length; k++) {
+                    clusterGroup[k].setMatrixAt( i, dummy.matrix );
 
+                  }
+                    if(z == amount -1) {
+                      // console.log(true)
+                    }
+                  i++;
               }
 
             }
