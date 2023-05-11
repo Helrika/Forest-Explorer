@@ -58,7 +58,7 @@ class loadedWorld {
       this.boxes = [];
       this.clock=new THREE.Clock();
       this.objectlist =[];
-      this.arr = ['./resources/tree2/tree.gltf','./resources/grass/grass2.gltf','./resources/rock/rock.gltf','./resources/treetest.gltf'];
+      this.arr = ['./resources/tree2/tree.gltf','./resources/bush/bush2.gltf','./resources/rock/rock1.gltf','./resources/treetest.gltf','./resources/bush/bush3.gltf', './resources/rock/rock2.gltf'];
 
       //camera
       const fov = 100;
@@ -171,9 +171,12 @@ class loadedWorld {
       this.objects_.push(b);
     }
     //console.log(this.arr[0]);
-   this._LoadTreeModel(this.arr[0], 100, 2,1);
-    this._LoadTreeModel(this.arr[1], 300, 5,1);
-   this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+   //this._LoadTreeModel(this.arr[0], 100, 2,1);
+    this._LoadTreeModel(this.arr[4], 25, 0.05,2);
+    this._LoadTreeModel(this.arr[1], 50, 0.01,1);
+    this._LoadTreeModel(this.arr[2], 50, 0.1,1);
+    this._LoadTreeModel(this.arr[5], 50, 1,1);
+   //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
     this._LoadTreeModel(this.arr[3],100,4,2);
     //this._LoadRockModel();
 
@@ -230,7 +233,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
 
               for ( var z = 0; z < amount; z ++ ) {
                 dummy.scale.setScalar(scale);
-                dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100);
+                dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *70, 0, Math.sin(Math.random()*2*Math.PI) *70);
                 dummy.updateMatrix();
 
                 cluster.setMatrixAt( k ++, dummy.matrix );
