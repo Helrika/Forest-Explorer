@@ -216,7 +216,7 @@ class loadedWorld {
     this._LoadTreeModel(this.arr[2], 50, 0.1,1);
     this._LoadTreeModel(this.arr[5], 50, 1,1);
    //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
-    this._LoadTreeModel(this.arr[3],100,4,2);
+    this._LoadTreeModel(this.arr[3],150,4,2);
     //this._LoadRockModel();
     this.pondSpawn(this.arr[6]);
     this.pondSpawn2(this.arr[7]);
