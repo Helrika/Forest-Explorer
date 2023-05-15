@@ -20,6 +20,8 @@ import * as THREE from 'three';
         //console.log(this.horizonLight.position.x);
         //console.log(this.horizonLight.position.y);
         //console.log(this.fog.far);
+
+        // fog generation
         if(this.horizonLight.position.y >= -1 && this.horizonLight.position.y <= -0.8){
           
           this.dayCheck = false;
