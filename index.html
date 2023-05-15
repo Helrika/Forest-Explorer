@@ -100,7 +100,7 @@
 			return fract(sin(dot(inputValue,vec2(123.456,43.12))) *seed);
 		}
 	
-		vec2 Drops(vec2 uv, float seed) {
+		vec2 rainDrops(vec2 uv, float seed) {
 			float shiftY = randomGen1(0.5, seed);
 			uv.y +=shiftY +u_time *u_movementY;
 
@@ -119,31 +119,30 @@
 			float distanceFromCentre = distance(cellUv, cellCentre);
 			float isInsideDrop = 1.0 - step(u_dropSize, distanceFromCentre);
 
-			float isDropShown = step(1.0-u_dropShown, randomGen2(cellIndex, seed +14244.324));
 
-			float dropIntensity = 1.0 - fract(u_time *0.1 +randomGen2(cellIndex, seed +32132.432) *2.0) *2.0;
+			float dropIsShown = step(1.0-u_dropShown, randomGen2(cellIndex, seed +235.111));
+
+			float rainIntensity = 1.0 - fract(u_time *0.1 +randomGen2(cellIndex, seed +36356.267) *2.0) *2.0;
 			
-			dropIntensity = sign(dropIntensity) *abs(dropIntensity * dropIntensity * dropIntensity * dropIntensity);
-			
-			dropIntensity = clamp(dropIntensity, 0.0, 1.0);
+			rainIntensity = clamp(sign(rainIntensity) *abs(rainIntensity * rainIntensity * rainIntensity * rainIntensity), 0.0, 1.0);
 			
 
 			vec2 vecToCentre = normalize(cellCentre - cellUv);
 			vec2 dropValue = vecToCentre * distanceFromCentre *distanceFromCentre * 40.0;
 
-			vec2 drop = dropValue * isDropShown *dropIntensity * isInsideDrop;
+			vec2 rainDrop = dropValue * dropIsShown *rainIntensity * isInsideDrop;
 
-			return drop;
+			return rainDrop;
 		}
 		void main()
 		{
 			vec2 uv = uvInterpolator;
 			
-			vec2 drops = vec2(0.0);
+			vec2 rainDrop = vec2(0.0);
 			for(int i =0; i< u_Intensity; i++) {
-				drops += Drops(uv ,42424.43 + float(i) * 12313.432 +(u_time *u_lifeSpan));
+				rainDrop += rainDrops(uv ,3999.21 + float(i) * 6969.420 +(u_time *u_lifeSpan));
 			}
-			uv+= drops;
+			uv+= rainDrop;
 			
 			vec4 color = texture2D(u_texture, uv*100.0);
 			gl_FragColor = color;
