@@ -16,7 +16,7 @@ export class cloudScene extends THREE.Object3D {
             var cloud = new THREE.Mesh(cloudGeo, cloudMat);
               cloud.position.set(
               Math.random()* 1000 -200, 
-              Math.random() *100 +100,
+              Math.random() *100 +100+i,
               Math.random()* 1000 -450
             );
             cloud.rotation.set(

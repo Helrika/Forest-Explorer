@@ -220,9 +220,9 @@ class loadedWorld {
     //this._LoadRockModel();
     this.pondSpawn(this.arr[6]);
     this.pondSpawn2(this.arr[7]);
-
+    const skytext = mapLoader.load("/resources/Sky_horiz_19.jpg");
     const geometry = new THREE.SphereGeometry(300, 32, 16);
-    const material = new THREE.MeshBasicMaterial({color: 0xfffff});
+    const material = new THREE.MeshStandardMaterial({map: skytext});
     const sphere = new THREE.Mesh(geometry, material);
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
