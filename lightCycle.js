@@ -1,23 +1,51 @@
 import * as THREE from 'three';
 
   export class dayNightCycle {
-    constructor(dirLight, horizonLoight) {
+    constructor(dirLight, horizonLoight, fog) {
       this.dirLight = dirLight;
       this.horizonLight = horizonLoight;
       this.top = true;
       this.right = false;
       this.bot = false;
       this.left = false;
-
+      this.fog = fog;
+      this.dayCheck = true;
      // this.objects_ = objects;
     }
 
     
     //look in the direction we want
     Update() {
-    
       
+        //console.log(this.horizonLight.position.x);
+        //console.log(this.horizonLight.position.y);
+        //console.log(this.fog.far);
+
+        // fog generation
+        if(this.horizonLight.position.y >= -1 && this.horizonLight.position.y <= -0.8){
+          
+          this.dayCheck = false;
+        }
+        if(this.horizonLight.position.y <= 1 && this.horizonLight.position.y >= 0.8){
+          
+          this.dayCheck = true;
+        }
+        let stop = false;
+        //night time
+        if(this.horizonLight.position.y <= -0.1 && this.horizonLight.position.y >= -0.3 && this.dayCheck == true && this.fog.far < 600 ){
+          
+          this.fog.far += 3;
+        }
+        //day time
+        if(this.horizonLight.position.y >= 0.1 && this.horizonLight.position.y <= 0.3 && this.dayCheck == false & this.fog.far >=100){
+          this.fog.far -= 3;
+
+        }
+        
         var speed = 0.001;
+        //console.log(this.horizonLight.position.y);
+        //console.log(this.fog.far);
+        console.log(this.fog.far);
         //this.flashLight.position = this.camera.position;
 
         if (this.top == true){
@@ -63,7 +91,14 @@ import * as THREE from 'three';
           this.dirLight.position.x += 1000 * speed;
           this.dirLight.position.y += 1000 * speed;
         }
-      
+
+        if (this.dirLight.position.y == -0.01){
+          
+        }
+        if (this.dirLight.position.y == 0.01){
+          
+        }
+        
     }
   
   }

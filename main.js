@@ -49,7 +49,7 @@ class loadedWorld {
       // SCENE
       this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color(0xa8def0);
-      
+      this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
       //[previous state]
       this.previousRAF = null;
       //animation state
@@ -227,7 +227,7 @@ class loadedWorld {
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
 
-    //wathis.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
+   
 
   }
 
@@ -595,7 +595,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
         this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
         this.horizonLight.position.set(0, 1, 0.5);
         this.scene.add(this.horizonLight);
-        this.moveLight = new dayNightCycle(this.dirLight,this.horizonLight);
+        this.moveLight = new dayNightCycle(this.dirLight,this.horizonLight, this.scene.fog);
 
 
   }
