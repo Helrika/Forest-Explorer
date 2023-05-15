@@ -26,7 +26,7 @@ class loadedWorld {
       this.InitializeCamera();
       this.raycast();
       this._loadClouds();
-    
+      this.shaderActive = false;
 
    
   }
@@ -58,16 +58,25 @@ class loadedWorld {
       this.boxes = [];
       this.clock=new THREE.Clock();
       this.objectlist =[];
-      this.arr = ['./resources/tree2/tree.gltf','./resources/bush/bush2.gltf','./resources/rock/rock1.gltf','./resources/treetest.gltf','./resources/bush/bush3.gltf', './resources/rock/rock2.gltf'];
+      this.arr = ['./resources/tree2/tree.gltf','./resources/bush/bush2.gltf','./resources/rock/rock1.gltf','./resources/treetest.gltf','./resources/bush/bush3.gltf', './resources/rock/rock2.gltf','./resources/pond.gltf', './resources/pond2.gltf'];
 
       //camera
       const fov = 100;
       const aspect = 1920 / 1080;
       const near = 1.0;
       const far = 1000.0;
+      
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       this.camera.position.set(0, 2, 0);
-    
+      const listener = new THREE.AudioListener();
+      this.camera.add( listener );
+      
+      // create a global audio source
+      this.sound = new THREE.Audio( listener );
+      
+      // load a sound and set it as the Audio object's buffer
+      this.audioLoader = new THREE.AudioLoader();
+      document.body.addEventListener('click', (e) => this.onclick(this.sound,this.audioLoader), false);
       this.cloudsArr = [];
       this.rainCount =15000;
       this.drops = 0;
@@ -85,6 +94,15 @@ class loadedWorld {
       this._RAF();
       
  
+  }
+  onclick(sound,audioLoader) {
+    
+    audioLoader.load( 'resources/crucial_surfacerain_med_loop.wav', function( buffer ) {
+      sound.setBuffer( buffer );
+      sound.setLoop( true );
+      sound.setVolume( 0.5 );
+      sound.play();
+    });
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -118,21 +136,39 @@ class loadedWorld {
     checkerboard.wrapT = THREE.RepeatWrapping;
     checkerboard.repeat.set(32, 32);
     checkerboard.encoding = THREE.sRGBEncoding;
-
-    const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000, 1000, 1000),
+    this.material_plane = new THREE.ShaderMaterial({
+      uniforms: {
+      u_time: {value: 0},
+      u_texture: {value: checkerboard},
+      u_movementY: {value :0},
+      u_movementX: {value :0},
+      u_Resolution: {value: 10.0},
+      u_centre: {value: 0.5},
+      u_dropShown: {value: 0.2},
+      u_dropSize: {value: 0.1},
+      u_lifeSpan: {value: 0.3},
+      u_Intensity: {value: 10},
+      }
+    });
+    this.plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000, 10, 10),
         this.grassmat);
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.rotation.x = -Math.PI / 2;
-    plane.userData.ground= true;
+        this.plane.castShadow = false;
+        this.plane.receiveShadow = true;
+        this.plane.rotation.x = -Math.PI / 2;
+        this.plane.userData.ground= true;
     this.plane1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
     //gets the boundaries
-    this.plane1BB.setFromObject(plane);
+    this.plane1BB.setFromObject(this.plane);
    // this.boxes.push(this.plane1BB);
+   if(this.shaderActive) {
+    this.grassmat.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+    this.grassmat.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+   }
 
+  
 
-    this.scene.add(plane);
+    this.scene.add(this.plane);
 
     const box = new THREE.Mesh(
       new THREE.BoxGeometry(4, 4, 4),
@@ -164,7 +200,7 @@ class loadedWorld {
     // // Create Box3 for each mesh in the scene so that we can
     // // do some easy intersection tests.
     const meshes = [
-      plane, box];
+      this.plane, box];
 
     this.objects_ = [];
 
@@ -182,6 +218,8 @@ class loadedWorld {
    //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
     this._LoadTreeModel(this.arr[3],100,4,2);
     //this._LoadRockModel();
+    this.pondSpawn(this.arr[6]);
+    this.pondSpawn2(this.arr[7]);
 
     const geometry = new THREE.SphereGeometry(300, 32, 16);
     const material = new THREE.MeshBasicMaterial({color: 0xfffff});
@@ -189,7 +227,7 @@ class loadedWorld {
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
 
-    this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
+    //wathis.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
 
   }
 
@@ -218,6 +256,92 @@ class loadedWorld {
 
   });
   }
+
+
+  pondSpawn(name) {
+    //console.log(point);
+    const mapLoader= new THREE.TextureLoader();
+    const texture = mapLoader.load('resources/background.jpg');
+    const loader = new GLTFLoader();
+  loader.load(name, (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+        //console.log(gltf.scene.children[0]);
+
+        gltf.scene.children[0].position.set(15,0,15);
+        this.scene.add(gltf.scene.children[0])
+        const geometry = new THREE.CylinderGeometry( 1, 1, 0.7, 32 ); 
+        this.pondMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+          u_time: {value: 0},
+          u_texture: {value: texture},
+          u_movementY: {value :0},
+          u_movementX: {value :0},
+          u_Resolution: {value: 10.0},
+          u_centre: {value: 0.5},
+          u_dropShown: {value: 0.2},
+          u_dropSize: {value: 0.1},
+          u_lifeSpan: {value: 0.3},
+          u_Intensity: {value: 10},
+          }
+        });
+        this.pondMaterial.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+        this.pondMaterial.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+        const cylinder = new THREE.Mesh( geometry, this.pondMaterial );
+        cylinder.position.set(15.095,0,15.051);
+         this.scene.add( cylinder );
+
+		
+
+
+  });
+  }
+
+
+  pondSpawn2(name) {
+    //console.log(point);
+    const mapLoader= new THREE.TextureLoader();
+    const texture = mapLoader.load('resources/background.jpg');
+    const loader = new GLTFLoader();
+  loader.load(name, (gltf) => {
+      gltf.scene.traverse(c => {
+          c.castShadow = true;
+          
+        });
+        //console.log(gltf.scene.children[0]);
+
+        gltf.scene.children[0].position.set(0,0,0);
+      
+        this.scene.add(gltf.scene.children[0])
+        const geometry = new THREE.CylinderGeometry( 2, 2, 0.5, 32 ); 
+        this.pond2Material = new THREE.ShaderMaterial({
+          uniforms: {
+          u_time: {value: 0},
+          u_texture: {value: texture},
+          u_movementY: {value :0},
+          u_movementX: {value :0},
+          u_Resolution: {value: 10.0},
+          u_centre: {value: 0.5},
+          u_dropShown: {value: 0.2},
+          u_dropSize: {value: 0.1},
+          u_lifeSpan: {value: 0.3},
+          u_Intensity: {value: 10},
+          }
+        });
+        this.pond2Material.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+        this.pond2Material.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+        const cylinder = new THREE.Mesh( geometry, this.pond2Material );
+        cylinder.position.set(0,0,0);
+         this.scene.add( cylinder );
+
+		
+
+
+  });
+  }
+
 _LoadTreeModel(name, amount, scale, repeat) {
   
   var dummy = new THREE.Object3D();
@@ -311,19 +435,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
             }
 
           }
-          // var material = gltf.scene.children[0].children[0].material;
-          // let geo = new THREE.BoxGeometry(0,0,0);
-          // let geo2 = gltf.scene.children[0].children[0].geometry;
-  
-          // var cluster = new THREE.InstancedMesh( 
-          //   geo2,
-          //   material, 
-          //   amount, //instance count 
-          //   false, //is it dynamic 
-          //   false,  //does it have color 
-          //   true,  //uniform scale
-          // );
-          // //this.scene.add( cluster );
+
         }
 
 
@@ -337,38 +449,11 @@ _LoadTreeModel(name, amount, scale, repeat) {
 
 
 
-// _LoadRockModel() {
-//   let rock = [];
-//   const loader = new GLTFLoader();
-
-//   loader.load('./resources/rock/scene.gltf', (gltf) => {
-//       gltf.scene.traverse(c => {
-//           c.castShadow = true;
-          
-//         });
-//         gltf.scene.scale.set(5,5,5);
-//        // //////console.log(gltf)
-//        this.scene.add(gltf.scene);
-//        for(let i = 0; i<100; i++) {
-//        // gltf.scene.position.set(Math.random()*100,0, Math.random()*100)
-//         rock.push(gltf.scene.clone());
-//         if(i == 99) {
-//           for(let j = 0; j<rock.length;j++) {
-//             rock[j].position.set(180*Math.random() +5,0,200*Math.random())
-//             rock[j].scale.set(0.4, 0.4, 0.4);
-//             this.scene.add(rock[j]);
-//           }
-//         }
-//        }
-
-//   });
-
-// }
-
   ////////////////////////////////////////////////////////////////////
   //////////// change any material loading here
   ////////////////////////////////////////////////////////////////////
   loadMaterial_(name, tiling) {
+    this.shaderActive = false;
     //you can use this to load mateirials. edit the stuff in here and remove placeholder assets
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
@@ -409,7 +494,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
     // roughnessMap.wrapS = THREE.RepeatWrapping;
     // roughnessMap.wrapT = THREE.RepeatWrapping;
     // roughnessMap.repeat.set(tiling, tiling);
-
+    
     const material = new THREE.MeshStandardMaterial({
      // metalnessMap: metalMap,
       map: albedo,
@@ -422,6 +507,43 @@ _LoadTreeModel(name, amount, scale, repeat) {
     return material;
   }
 
+  loadShaderMaterial_(name, tiling) {
+    //you can use this to load mateirials. edit the stuff in here and remove placeholder assets
+    this.shaderActive = true;
+    const mapLoader = new THREE.TextureLoader();
+    const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
+
+
+
+    const albedo = mapLoader.load('resources/textures/' + name + 'basecolor.jpg');
+    albedo.anisotropy = maxAnisotropy;
+    albedo.wrapS = THREE.RepeatWrapping;
+    albedo.wrapT = THREE.RepeatWrapping;
+    albedo.repeat.set(tiling, tiling);
+    albedo.encoding = THREE.sRGBEncoding;
+
+
+
+    const mat1 = new THREE.ShaderMaterial({
+
+      uniforms: {
+      u_time: {value: 0},
+      u_texture: {value: albedo},
+      u_movementY: {value :0},
+      u_movementX: {value :0},
+      u_Resolution: {value: 100.0},
+      u_centre: {value: 0.5},
+      u_dropShown: {value: 0.5},
+      u_dropSize: {value: 0.01},
+      u_lifeSpan: {value: 0.3},
+      u_Intensity: {value: 1000},
+      lightDirection: { value: new THREE.Vector3(1.0, 1.0, 1.0).normalize() }
+      }
+      
+    });
+
+    return mat1;
+  }
 
   ////////////////////////////////////////////////////////////////////
   //////////// change above the rest below is fine
@@ -478,43 +600,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
 
   }
 
-  InitializeGeos() {
-      //geometry
-    const plane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1000, 1000, 10, 10),
-      new THREE.MeshStandardMaterial({
-          color: 0xFFFFFF*0.7,
-      }));
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.rotation.x = -Math.PI / 2;
-    this.scene.add(plane);
-  }
 
-  InitializeMap() {
-    // initialize plane
-    this.plane = new THREE.PlaneBufferGeometry(1000, 1000, 10, 10);
-    this.plane.castShadow = true;
-    this.plane.receiveShadow = true;
-
-    this.vertices = this.plane.attributes.position.array;
-    // apply height map to vertices of plane
-    for(i=0, j=2; i < data.length; i += 4, j += 3) {
-        vertices[j] = data[i] * HEIGHT_AMPLIFIER;
-    }
-
-    var material = new THREE.MeshPhongMaterial({color: 0xFFFFFF, side: THREE.DoubleSide, shading: THREE.FlatShading});
-
-    var mesh = new THREE.Mesh(plane, material);
-    mesh.rotation.x = - Math.PI / 2;
-    mesh.matrixAutoUpdate  = false;
-    mesh.updateMatrix();
-
-    plane.computeFaceNormals();
-    plane.computeVertexNormals();
-
-    scene.add(mesh);
-  }
 
   
 //resize window
@@ -603,6 +689,15 @@ _LoadTreeModel(name, amount, scale, repeat) {
           //this.dragObject();
           this.moveLight.Update();
           this._RAF();
+          if(this.shaderActive ==true) {
+            this.plane.material.uniforms.u_time.value =t/1000;
+          }
+          if(this.pondMaterial){
+            this.pondMaterial.uniforms.u_time.value =t/1000;
+          }
+          if(this.pond2Material) {
+            this.pond2Material.uniforms.u_time.value =t/1000;
+          }
           
           this.rainDown.Update();
           this.renderer.render(this.scene, this.camera);

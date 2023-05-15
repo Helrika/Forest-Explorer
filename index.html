@@ -50,5 +50,104 @@
     src="main.js"></script>
 	
     </script>
+	<script type="x-shader/x-vertex" id="vertexShadersdwSimple">
+		void main()
+		{
+		  vec4 ViewPosition= modelViewMatrix * vec4(position,1.0);
+		  gl_Position=projectionMatrix * ViewPosition;
+		}
+	  </script>
+	<script type="x-shader/x-vertex" id="vertexShaderSimple">
+		out vec2 uvInterpolator;
+		varying vec3 vColor;
+
+		void main() {
+		  uvInterpolator = uv;
+		  vec3 light = vec3( 0.5, 0.2, 1.0 );
+		  light = normalize( light );
+		  vec3 ViewNormal= normalize(normalMatrix * normal);
+		  float dProd = dot( ViewNormal, light );
+		  dProd=clamp(dProd,0.0,1.0);
+		  vColor =  vec3( dProd );
+		  vec4 ViewPosition= modelViewMatrix * vec4(position,1.0);
+		  gl_Position=projectionMatrix * ViewPosition;
+		
+		}
+
+		
+
+
+	  </script>
+
+	  <script type="x-shader/x-fragment" id="fragmentShaderSimple">
+		in vec2 uvInterpolator;
+		uniform float u_time;
+		uniform sampler2D u_texture;
+		uniform float u_movementY;
+		uniform float u_movementX;
+		uniform float u_Resolution;
+		uniform float u_centre;
+		uniform float u_dropShown;
+		uniform float u_dropSize;
+		uniform float u_lifeSpan;
+		uniform int u_Intensity; 
+
+		float randomGen1(float inputValue, float seed) {
+			return fract(sin(inputValue *345.456) *seed);
+		}
+
+		float randomGen2(vec2 inputValue, float seed) {
+			return fract(sin(dot(inputValue,vec2(123.456,43.12))) *seed);
+		}
+	
+		vec2 Drops(vec2 uv, float seed) {
+			float shiftY = randomGen1(0.5, seed);
+			uv.y +=shiftY +u_time *u_movementY;
+
+
+			float cellResolution = u_Resolution;
+			uv *= cellResolution;
+
+			float rowIndex = floor(uv.y);
+			float shiftX = randomGen1(rowIndex, seed);
+			uv.x += shiftX +u_time *u_movementX;
+			
+			vec2 cellIndex = floor(uv);
+			vec2 cellUv = fract(uv);
+
+			vec2 cellCentre = vec2(u_centre);
+			float distanceFromCentre = distance(cellUv, cellCentre);
+			float isInsideDrop = 1.0 - step(u_dropSize, distanceFromCentre);
+
+			float isDropShown = step(1.0-u_dropShown, randomGen2(cellIndex, seed +14244.324));
+
+			float dropIntensity = 1.0 - fract(u_time *0.1 +randomGen2(cellIndex, seed +32132.432) *2.0) *2.0;
+			
+			dropIntensity = sign(dropIntensity) *abs(dropIntensity * dropIntensity * dropIntensity * dropIntensity);
+			
+			dropIntensity = clamp(dropIntensity, 0.0, 1.0);
+			
+
+			vec2 vecToCentre = normalize(cellCentre - cellUv);
+			vec2 dropValue = vecToCentre * distanceFromCentre *distanceFromCentre * 40.0;
+
+			vec2 drop = dropValue * isDropShown *dropIntensity * isInsideDrop;
+
+			return drop;
+		}
+		void main()
+		{
+			vec2 uv = uvInterpolator;
+			
+			vec2 drops = vec2(0.0);
+			for(int i =0; i< u_Intensity; i++) {
+				drops += Drops(uv ,42424.43 + float(i) * 12313.432 +(u_time *u_lifeSpan));
+			}
+			uv+= drops;
+			
+			vec4 color = texture2D(u_texture, uv*100.0);
+			gl_FragColor = color;
+		}
+	  </script>
   </body>
 </html>
