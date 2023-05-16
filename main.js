@@ -19,16 +19,13 @@ import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/
 
 class loadedWorld {
   constructor() {
-      this.Initialize(); 
-   
+      this.Initialize();
       this.InitializeLights();
       this.initializeScene_();
       this.InitializeCamera();
       this.raycast();
       this._loadClouds();
       this.shaderActive = false;
-
-   
   }
 
   Initialize() {
@@ -49,7 +46,7 @@ class loadedWorld {
       // SCENE
       this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color(0xa8def0);
-      this.scene.fog = new THREE.Fog(0xDFE9F3, 0, 100);
+      this.scene.fog = new THREE.Fog(0xDFE9F3, 300, 400);
       //[previous state]
       this.previousRAF = null;
       //animation state
@@ -210,12 +207,12 @@ class loadedWorld {
       this.objects_.push(b);
     }
     ////console.log(this.arr[0]);
-   //this._LoadTreeModel(this.arr[0], 100, 2,1);
+    this._LoadTreeModel(this.arr[0], 100, 2,1);
     this._LoadTreeModel(this.arr[4], 25, 0.05,2);
     this._LoadTreeModel(this.arr[1], 50, 0.01,1);
     this._LoadTreeModel(this.arr[2], 50, 0.1,1);
     this._LoadTreeModel(this.arr[5], 50, 1,1);
-   //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+    //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
     this._LoadTreeModel(this.arr[3],150,4,2);
     //this._LoadRockModel();
     this.pondSpawn(this.arr[6]);
@@ -371,6 +368,8 @@ _LoadTreeModel(name, amount, scale, repeat) {
             false,  //does it have color 
             true,  //uniform scale
           );
+          cluster.receiveShadow = true;
+          cluster.castShadow = true;
           this.scene.add( cluster );
           var k = 0;
           var offset = ( amount - 1 ) / 2;
@@ -406,6 +405,8 @@ _LoadTreeModel(name, amount, scale, repeat) {
                 false,  //does it have color 
                 true,  //uniform scale
               );
+              cluster.receiveShadow = true;
+              cluster.castShadow = true;
               clusterGroup.push(cluster);
               ////console.log(clusterGroup);
               this.scene.add( clusterGroup[i] );
@@ -563,7 +564,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
         //this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
         this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        this.dirLight.position.set(0, 1000, 0);
+        this.dirLight.position.set(0, 99, 0);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.top = 50;
         this.dirLight.shadow.camera.bottom = - 50;
@@ -578,19 +579,9 @@ _LoadTreeModel(name, amount, scale, repeat) {
         this.ambLight = new THREE.AmbientLight(0x101010, 0.5);
         this.scene.add(this.ambLight);
     
-        this.flashLight = new THREE.SpotLight(0xffffff, 1.0, 25, Math.PI / 4.0, 0.5, 1);
+        this.flashLight = new THREE.SpotLight(0xff0000);
         this.flashLight.position.set(0, 10, 0);
         this.flashLight.rotation.set(0, 270, 0);
-    
-        this.scene.add(this.flashLight);
-        this.scene.add(this.flashLight.target);
-    
-        this.camera.add(this.flashLight);
-        this.camera.add(this.flashLight.target);
-        // this.camera.add(this.flashLight);
-        // this.camera.add(this.flashLight.target);
-        //this.camera.add(flashLight.target);
-        //flashLight.target.position.z = -3;
     
         this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
         this.horizonLight.position.set(0, 1, 0.5);

@@ -22,30 +22,30 @@ import * as THREE from 'three';
         //console.log(this.fog.far);
 
         // fog generation
-        if(this.horizonLight.position.y >= -1 && this.horizonLight.position.y <= -0.8){
+        // if(this.horizonLight.position.y >= -1 && this.horizonLight.position.y <= -0.8){
           
-          this.dayCheck = false;
-        }
-        if(this.horizonLight.position.y <= 1 && this.horizonLight.position.y >= 0.8){
+        //   this.dayCheck = false;
+        // }
+        // if(this.horizonLight.position.y <= 1 && this.horizonLight.position.y >= 0.8){
           
-          this.dayCheck = true;
-        }
-        let stop = false;
-        //night time
-        if(this.horizonLight.position.y <= -0.1 && this.horizonLight.position.y >= -0.3 && this.dayCheck == true && this.fog.far < 600 ){
+        //   this.dayCheck = true;
+        // }
+        // let stop = false;
+        // //night time
+        // if(this.horizonLight.position.y <= -0.1 && this.horizonLight.position.y >= -0.3 && this.dayCheck == true && this.fog.far < 600 ){
           
-          this.fog.far += 3;
-        }
-        //day time
-        if(this.horizonLight.position.y >= 0.1 && this.horizonLight.position.y <= 0.3 && this.dayCheck == false & this.fog.far >=100){
-          this.fog.far -= 3;
+        //   this.fog.far += 3;
+        // }
+        // //day time
+        // if(this.horizonLight.position.y >= 0.1 && this.horizonLight.position.y <= 0.3 && this.dayCheck == false & this.fog.far >=100){
+        //   this.fog.far -= 3;
 
-        }
+        // }
         
-        var speed = 0.001;
+        var speed = 0.01;
         //console.log(this.horizonLight.position.y);
         //console.log(this.fog.far);
-        console.log(this.fog.far);
+        //console.log(this.fog.far);
         //this.flashLight.position = this.camera.position;
 
         if (this.top == true){
@@ -79,26 +79,30 @@ import * as THREE from 'three';
         }
 
         if (this.top == true){
-          this.dirLight.position.x += 1000 * speed;
-          this.dirLight.position.y -= 1000 * speed;
+          this.dirLight.position.x += 99 * speed;
+          this.dirLight.position.y -= 99 * speed;
+          this.fog.near -= 300 * speed;
+          this.fog.far -= 300 * speed;
         } else if (this.right == true){
-          this.dirLight.position.x -= 1000 * speed;
-          this.dirLight.position.y -= 1000 * speed;
+          this.dirLight.position.x -= 99 * speed;
+          this.dirLight.position.y -= 99 * speed;
         } else if (this.bot == true){
-          this.dirLight.position.x -= 1000 * speed;
-          this.dirLight.position.y += 1000 * speed;
+          this.dirLight.position.x -= 99 * speed;
+          this.dirLight.position.y += 99 * speed;
+          //this.fog.near += 300 * speed;
+          //this.fog.far += 300 * speed;
         } else if (this.left == true){
-          this.dirLight.position.x += 1000 * speed;
-          this.dirLight.position.y += 1000 * speed;
+          this.dirLight.position.x += 99 * speed;
+          this.dirLight.position.y += 99 * speed;
+          this.fog.near += 300 * speed;
+          this.fog.far += 300 * speed;
         }
 
-        if (this.dirLight.position.y == -0.01){
+        // if (this.dirLight.position.y == -0.01){
           
-        }
-        if (this.dirLight.position.y == 0.01){
+        // }
+        // if (this.dirLight.position.y == 0.01){
           
-        }
-        
+        // }  
     }
-  
   }
