@@ -4,6 +4,8 @@ const KEYS = {
     's': 83,
     'w': 87,
     'd': 68,
+    'e': 69,
+    'f': 70,
     'space': 32,
     'enter': 13,
   };
@@ -112,7 +114,7 @@ export class InputController {
   }
   
   export class FirstPersonCamera {
-    constructor(camera, clock, player, boundingboxs, playerBB, planeBB, objects) {
+    constructor(camera, clock, player, boundingboxs, playerBB, planeBB, objects, flashLight) {
       this.camera = camera;
       this.clock = clock;
       this.input = new InputController();
@@ -140,6 +142,8 @@ export class InputController {
       this.search = [];
       this.objects = objects;
       this.Initialize(); 
+      this.flashLight = flashLight;
+      this.lanternOn = false;
      // this.objects_ = objects;
     }
     Initialize() {
@@ -156,6 +160,8 @@ export class InputController {
      
       this.UpdateRotation(timeElapsedS);
       this.UpdateCamera(timeElapsedS);
+      this.turnLanternOn();
+      this.turnLanternOff();
 
       if(this.camera.position.y <= this.groundHeight) {
         this.canJump = true;
@@ -180,6 +186,7 @@ export class InputController {
      
       //if input update isnt called, then the rotation will spaz out
       this.input.update(timeElapsedS);
+
       
     }
     checkFortarget() {
@@ -352,4 +359,21 @@ export class InputController {
     
     }
   
+    turnLanternOn(){
+      if (this.input.key(KEYS.e) == 1){
+        if (this.flashLight.intensity == 0){
+          this.flashLight.intensity = 10;
+        }
+      }
+
+    }
+
+    turnLanternOff(){
+      if (this.input.key(KEYS.f) == 1){
+        if (this.flashLight.intensity == 10){
+          this.flashLight.intensity = 0;
+        }
+      }
+    }
+
   }

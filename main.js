@@ -46,7 +46,7 @@ class loadedWorld {
       // SCENE
       this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color(0xa8def0);
-      this.scene.fog = new THREE.Fog(0xDFE9F3, 300, 400);
+      this.scene.fog = new THREE.Fog(0xA7A69D, 300, 400);
       //[previous state]
       this.previousRAF = null;
       //animation state
@@ -192,7 +192,7 @@ class loadedWorld {
     this.playerBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
     //gets the boundaries
     this.playerBB.setFromObject(this.player);
-    this.scene.add(this.player);  
+    //this.scene.add(this.player);  
 
     // // Create Box3 for each mesh in the scene so that we can
     // // do some easy intersection tests.
@@ -207,18 +207,18 @@ class loadedWorld {
       this.objects_.push(b);
     }
     ////console.log(this.arr[0]);
-    this._LoadTreeModel(this.arr[0], 100, 2,1);
+     //this._LoadTreeModel(this.arr[0], 100, 2,1);
     this._LoadTreeModel(this.arr[4], 25, 0.05,2);
-    this._LoadTreeModel(this.arr[1], 50, 0.01,1);
-    this._LoadTreeModel(this.arr[2], 50, 0.1,1);
-    this._LoadTreeModel(this.arr[5], 50, 1,1);
-    //this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+     this._LoadTreeModel(this.arr[1], 50, 0.01,1);
+     this._LoadTreeModel(this.arr[2], 50, 0.1,1);
+     this._LoadTreeModel(this.arr[5], 50, 1,1);
+    this._LoadTreeModel(this.arr[2], 300, 0.3,1);
     this._LoadTreeModel(this.arr[3],150,4,2);
     //this._LoadRockModel();
     this.pondSpawn(this.arr[6]);
     this.pondSpawn2(this.arr[7]);
     const skytext = mapLoader.load("/resources/Sky_horiz_19.jpg");
-    const geometry = new THREE.SphereGeometry(300, 32, 16);
+    const geometry = new THREE.SphereGeometry(400, 32, 16);
     const material = new THREE.MeshStandardMaterial({map: skytext});
     const sphere = new THREE.Mesh(geometry, material);
     sphere.material.side = THREE.BackSide;
@@ -553,7 +553,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
   InitializeCamera() {
     
     //put Camera elements in here!
-    this.fpsCamera = new FirstPersonCamera(this.camera, this.clock, this.player,this.boxes, this.playerBB, this.plane1BB, this.objectlist);
+    this.fpsCamera = new FirstPersonCamera(this.camera, this.clock, this.player,this.boxes, this.playerBB, this.plane1BB, this.objectlist, this.flashLight);
    // this.collisions = new collsionDetect(this.camera, this.clock, this.player, this.boxes, this.playerBB);
     
   }
@@ -564,7 +564,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
         //this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
 
         this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        this.dirLight.position.set(0, 99, 0);
+        this.dirLight.position.set(0, 200, 0);
         this.dirLight.castShadow = true;
         this.dirLight.shadow.camera.top = 50;
         this.dirLight.shadow.camera.bottom = - 50;
@@ -579,9 +579,13 @@ _LoadTreeModel(name, amount, scale, repeat) {
         this.ambLight = new THREE.AmbientLight(0x101010, 0.5);
         this.scene.add(this.ambLight);
     
-        this.flashLight = new THREE.SpotLight(0xff0000);
-        this.flashLight.position.set(0, 10, 0);
-        this.flashLight.rotation.set(0, 270, 0);
+        this.flashLight = new THREE.PointLight(0xE67638, 0, 30);
+        //this.camera.add(this.flashLight);
+        //this.flashLight.position.set(this.camera.position);
+        this.flashLight.position.set(0, 5, 0);
+        this.flashLight.target = this.camera;
+        this.scene.add(this.flashLight);
+        //this.player.add(this.flashLight);
     
         this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
         this.horizonLight.position.set(0, 1, 0.5);
@@ -690,6 +694,16 @@ _LoadTreeModel(name, amount, scale, repeat) {
             this.pond2Material.uniforms.u_time.value =t/1000;
           }
           
+          this.flashLight.position.x = this.camera.position.x + 0;
+          this.flashLight.position.y = this.camera.position.y + 1;
+          this.flashLight.position.z = this.camera.position.z + 0;
+          
+          document.onKeyDown = function (e){
+            if (e.keyCode === 69){
+              this.flashLight.intensity = 0;
+            }
+          }
+
           this.rainDown.Update();
           this.renderer.render(this.scene, this.camera);
           this._Step(t - this.previousRAF);

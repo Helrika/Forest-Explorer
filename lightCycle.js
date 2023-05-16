@@ -42,7 +42,8 @@ import * as THREE from 'three';
 
         // }
         
-        var speed = 0.01;
+        var speed = 0.0001;
+        var lightDis = 200;
         //console.log(this.horizonLight.position.y);
         //console.log(this.fog.far);
         //console.log(this.fog.far);
@@ -79,23 +80,26 @@ import * as THREE from 'three';
         }
 
         if (this.top == true){
-          this.dirLight.position.x += 99 * speed;
-          this.dirLight.position.y -= 99 * speed;
-          this.fog.near -= 300 * speed;
-          this.fog.far -= 300 * speed;
+          this.dirLight.position.x += lightDis * speed;
+          this.dirLight.position.y -= lightDis * speed;
+          if (this.fog.near >= 25 && this.fog.far >= 125){
+            this.fog.near -= 300 * speed;
+            this.fog.far -= 300 * speed;
+          }
         } else if (this.right == true){
-          this.dirLight.position.x -= 99 * speed;
-          this.dirLight.position.y -= 99 * speed;
+          this.dirLight.position.x -= lightDis * speed;
+          this.dirLight.position.y -= lightDis * speed;
         } else if (this.bot == true){
-          this.dirLight.position.x -= 99 * speed;
-          this.dirLight.position.y += 99 * speed;
-          //this.fog.near += 300 * speed;
-          //this.fog.far += 300 * speed;
+          this.dirLight.position.x -= lightDis * speed;
+          this.dirLight.position.y += lightDis * speed;
         } else if (this.left == true){
-          this.dirLight.position.x += 99 * speed;
-          this.dirLight.position.y += 99 * speed;
-          this.fog.near += 300 * speed;
-          this.fog.far += 300 * speed;
+          this.dirLight.position.x += lightDis * speed;
+          this.dirLight.position.y += lightDis * speed;
+          if (this.fog.near <= 300 && this.fog.far <= 400){
+            this.fog.near += 300 * speed;
+            this.fog.far += 300 * speed;
+          }
+          
         }
 
         // if (this.dirLight.position.y == -0.01){
