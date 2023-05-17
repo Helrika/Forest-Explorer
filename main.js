@@ -15,7 +15,7 @@ import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 import { cloudScene } from './clouds.js';
 import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
-
+import datGui from 'https://cdn.skypack.dev/dat.gui';
 
 class loadedWorld {
   constructor() {
@@ -78,8 +78,17 @@ class loadedWorld {
       this.rainCount =15000;
       this.drops = 0;
 
-
-     
+      this.grassmat = [];
+      this.grassmat2 = this.loadMaterial_("Grass_001_", 110);
+      this.grassmat3 = this.loadShaderMaterial_("Grass_001_", 110);
+      this.grassmat.push(this.grassmat2);
+      this.grassmat.push(this.grassmat3);
+        this.params = {
+          speed: 1,
+          nums: 2,
+          vel: 1,
+        };
+      this.gui = new datGui.GUI();
       // const orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
       // orbitControls.enableDamping = true
       // orbitControls.minDistance = 25
@@ -126,30 +135,17 @@ class loadedWorld {
 
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    this.grassmat = this.loadMaterial_("Grass_001_", 110);
+    console.log(this.grassmat)
+    
     const checkerboard = mapLoader.load('resources/grass.png');
     checkerboard.anisotropy = maxAnisotropy;
     checkerboard.wrapS = THREE.RepeatWrapping;
     checkerboard.wrapT = THREE.RepeatWrapping;
     checkerboard.repeat.set(32, 32);
     checkerboard.encoding = THREE.sRGBEncoding;
-    this.material_plane = new THREE.ShaderMaterial({
-      uniforms: {
-      u_time: {value: 0},
-      u_texture: {value: checkerboard},
-      u_movementY: {value :0},
-      u_movementX: {value :0},
-      u_Resolution: {value: 10.0},
-      u_centre: {value: 0.5},
-      u_dropShown: {value: 0.2},
-      u_dropSize: {value: 0.1},
-      u_lifeSpan: {value: 0.3},
-      u_Intensity: {value: 10},
-      }
-    });
     this.plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
-        this.grassmat);
+        this.grassmat[0]);
         this.plane.castShadow = false;
         this.plane.receiveShadow = true;
         this.plane.rotation.x = -Math.PI / 2;
@@ -158,10 +154,10 @@ class loadedWorld {
     //gets the boundaries
     this.plane1BB.setFromObject(this.plane);
    // this.boxes.push(this.plane1BB);
-   if(this.shaderActive) {
-    this.grassmat.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
-    this.grassmat.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
-   }
+
+    this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+    this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+
 
   
 
@@ -181,7 +177,7 @@ class loadedWorld {
      this.boxBB.setFromObject(box);
      this.boxes.push(this.boxBB);
      this.objectlist.push(box);
-    this.scene.add(box);
+
 
     this.playerGeo = new THREE.CapsuleGeometry(1,1,4,8);
     this.playerMesh = new THREE.MeshBasicMaterial({color: 0x00ff00});
@@ -210,9 +206,9 @@ class loadedWorld {
      //this._LoadTreeModel(this.arr[0], 100, 2,1);
     this._LoadTreeModel(this.arr[4], 25, 0.05,2);
      this._LoadTreeModel(this.arr[1], 50, 0.01,1);
-     this._LoadTreeModel(this.arr[2], 50, 0.1,1);
+     this._LoadTreeModel(this.arr[2], 150, 0.1,1);
      this._LoadTreeModel(this.arr[5], 50, 1,1);
-    this._LoadTreeModel(this.arr[2], 300, 0.3,1);
+    // this._LoadTreeModel(this.arr[2], 300, 0.3,1);
     this._LoadTreeModel(this.arr[3],150,4,2);
     //this._LoadRockModel();
     this.pondSpawn(this.arr[6]);
@@ -224,8 +220,54 @@ class loadedWorld {
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
 
+   this.gui.add(this.plane.material, 'wireframe').name("plane texture").onChange((e) => {
+    console.log(e);
+    this.resetPlane(e);
+   })
+   this.gui.add(this.params,'speed', 0,10).name("light cycle speed");
+   this.gui.add(this.params,'nums', 0,this.arr.length -3).step(1).name("object spawner");
+   this.gui.add(this.params,'vel', 0,10).name("Rain Velocity");
    
 
+  }
+
+  resetPlane(type) {
+    this.scene.remove(this.plane);
+
+    if(type == true) {
+      this.plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000, 10, 10),
+        this.grassmat[1]);
+        this.plane.castShadow = false;
+        this.plane.receiveShadow = true;
+        this.plane.rotation.x = -Math.PI / 2;
+        this.plane.userData.ground= true;
+  
+  
+    this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+    this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+    this.scene.add(this.plane);
+    } else {
+      this.plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000, 10, 10),
+        this.grassmat[0]);
+        this.plane.castShadow = false;
+        this.plane.receiveShadow = true;
+        this.plane.rotation.x = -Math.PI / 2;
+        this.plane.userData.ground= true;
+  
+  
+    this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+    this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+    this.scene.add(this.plane);
+    }
+
+
+
+
+
+
+  
   }
 
 
@@ -234,7 +276,36 @@ class loadedWorld {
     return geo2;
   }
 
-  manualSpawn(name, point) {
+  manualSpawn(name, point, num) {
+    var objScale = 1;
+    switch(num) {
+      case 0:
+        objScale = 1;
+        break;
+
+      case 1:
+        objScale = 0.01;
+        break;
+      
+      case 2:
+        objScale = 0.1;    
+        break;
+      
+      case 3:
+        objScale = 4;
+        break;
+      
+      case 4:
+        objScale = 0.05;
+        break;
+      
+      case 5:
+        objScale = 1;    
+        break;
+      
+
+    }
+    
     //console.log(point);
     const loader = new GLTFLoader();
   loader.load(name, (gltf) => {
@@ -243,7 +314,7 @@ class loadedWorld {
           
         });
         //console.log(gltf.scene.children[0]);
-
+        gltf.scene.children[0].scale.set(objScale,objScale,objScale);
         gltf.scene.children[0].position.set(point.x,point.y,point.z);
         this.scene.add(gltf.scene.children[0])
 
@@ -334,15 +405,22 @@ class loadedWorld {
          this.scene.add( cylinder );
 
 		
-
+         this.gui.add(this.pond2Material.uniforms.u_movementY,'value',-1,1).name("directionY");
+         this.gui.add(this.pond2Material.uniforms.u_movementX,'value',-3,3).name("directionX");
+         this.gui.add(this.pond2Material.uniforms.u_Resolution,'value',1,100).name("Resolution");
+         this.gui.add(this.pond2Material.uniforms.u_centre,'value',0,1).name("displacement");
+         this.gui.add(this.pond2Material.uniforms.u_dropShown,'value',0,1).name("shown");
+         this.gui.add(this.pond2Material.uniforms.u_dropSize,'value',0,1).name("size");
+         this.gui.add(this.pond2Material.uniforms.u_lifeSpan,'value',0,1).name("LifeSpan");
+         this.gui.add(this.pond2Material.uniforms.u_Intensity,'value',1,1000).name("Intensity");
 
   });
   }
 
 _LoadTreeModel(name, amount, scale, repeat) {
   
-  var dummy = new THREE.Object3D();
-  var dummy2 = new THREE.Object3D();
+  var target = new THREE.Object3D();
+  var target2 = new THREE.Object3D();
   var matrix = new THREE.Matrix4();
   var position = new THREE.Vector3();
   // let geo = new THREE.BufferGeometry();
@@ -378,11 +456,11 @@ _LoadTreeModel(name, amount, scale, repeat) {
             for ( var y = 0; y < amount; y ++ ) {
 
               for ( var z = 0; z < amount; z ++ ) {
-                dummy.scale.setScalar(scale);
-                dummy.position.set( Math.sin(Math.random() * 2*Math.PI) *70, 0, Math.sin(Math.random()*2*Math.PI) *70);
-                dummy.updateMatrix();
+                target.scale.setScalar(scale);
+                target.position.set( Math.sin(Math.random() * 2*Math.PI) *70, 0, Math.sin(Math.random()*2*Math.PI) *70);
+                target.updateMatrix();
 
-                cluster.setMatrixAt( k ++, dummy.matrix );
+                cluster.setMatrixAt( k ++, target.matrix );
 
               }
 
@@ -408,7 +486,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
               cluster.receiveShadow = true;
               cluster.castShadow = true;
               clusterGroup.push(cluster);
-              ////console.log(clusterGroup);
+
               this.scene.add( clusterGroup[i] );
           }
 
@@ -419,12 +497,12 @@ _LoadTreeModel(name, amount, scale, repeat) {
             for ( var y = 0; y < amount; y ++ ) {
 
               for ( var z = 0; z < amount; z ++ ) {
-                dummy.scale.setScalar(scale);
-                dummy.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
-                dummy.updateMatrix();
+                target.scale.setScalar(scale);
+                target.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
+                target.updateMatrix();
                   ////console.log(clusterGroup);
                   for(let k = 0; k<clusterGroup.length; k++) {
-                    clusterGroup[k].setMatrixAt( i, dummy.matrix );
+                    clusterGroup[k].setMatrixAt( i, target.matrix );
 
                   }
                     if(z == amount -1) {
@@ -538,7 +616,6 @@ _LoadTreeModel(name, amount, scale, repeat) {
       u_dropSize: {value: 0.01},
       u_lifeSpan: {value: 0.3},
       u_Intensity: {value: 1000},
-      lightDirection: { value: new THREE.Vector3(1.0, 1.0, 1.0).normalize() }
       }
       
     });
@@ -636,7 +713,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
         this.draggable.push(this.found[0].object.parent);
   
       } else {
-        this.manualSpawn(this.arr[0], this.found[0].point);
+        this.manualSpawn(this.arr[this.params.nums], this.found[0].point, this.params.nums);
       }
       }); 
   
@@ -682,11 +759,12 @@ _LoadTreeModel(name, amount, scale, repeat) {
             this.previousRAF = t;
           }
           //this.dragObject();
-          this.moveLight.Update();
+          this.moveLight.Update(this.params.speed);
           this._RAF();
-          if(this.shaderActive ==true) {
-            this.plane.material.uniforms.u_time.value =t/1000;
+          if(this.grassmat.length >1) {
+            this.grassmat[1].uniforms.u_time.value =t/1000;
           }
+          
           if(this.pondMaterial){
             this.pondMaterial.uniforms.u_time.value =t/1000;
           }
@@ -704,7 +782,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
             }
           }
 
-          this.rainDown.Update();
+          this.rainDown.Update(this.params.vel);
           this.renderer.render(this.scene, this.camera);
           this._Step(t - this.previousRAF);
           this.previousRAF = t;

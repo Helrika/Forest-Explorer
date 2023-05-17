@@ -15,7 +15,8 @@ import * as THREE from 'three';
 
     
     //look in the direction we want
-    Update() {
+    Update(speedMult) {
+      
       
         //console.log(this.horizonLight.position.x);
         //console.log(this.horizonLight.position.y);
@@ -42,7 +43,7 @@ import * as THREE from 'three';
 
         // }
         
-        var speed = 0.0001;
+        var speed = 0.001 * speedMult;
         var lightDis = 200;
         //console.log(this.horizonLight.position.y);
         //console.log(this.fog.far);

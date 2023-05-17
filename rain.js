@@ -11,7 +11,7 @@ import * as THREE from 'three';
 
     }
 
-    Update() {
+    Update(newVel) {
             this.cloudsArr.forEach((element, index) => {
               if(index <this.cloudsArr.length-2) {
                 element.rotation.z +=0.001;
@@ -41,7 +41,7 @@ import * as THREE from 'three';
             for(let i = 0; i < this.drops.count; i++){
               let y = this.drops.getY( i );  
               let vel = this.vertices[i].velocity;
-              vel -=1 + Math.random()*0.1;
+              vel -=newVel + Math.random()*0.1;
               y += vel;
               if(y <-50) {
                 y = 200;

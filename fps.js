@@ -160,7 +160,7 @@ export class InputController {
      
       this.UpdateRotation(timeElapsedS);
       this.UpdateCamera(timeElapsedS);
-      this.turnLanternOn();
+      this.turnLanternOn(); 
       this.turnLanternOff();
 
       if(this.camera.position.y <= this.groundHeight) {
