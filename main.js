@@ -106,7 +106,7 @@ class loadedWorld {
     audioLoader.load( 'resources/crucial_surfacerain_med_loop.wav', function( buffer ) {
       sound.setBuffer( buffer );
       sound.setLoop( true );
-      sound.setVolume( 0.5 );
+      sound.setVolume( 0.3 );
       sound.play();
     });
   }
@@ -135,7 +135,7 @@ class loadedWorld {
 
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    console.log(this.grassmat)
+    //console.log(this.grassmat)
     
     const checkerboard = mapLoader.load('resources/grass.png');
     checkerboard.anisotropy = maxAnisotropy;
@@ -202,7 +202,7 @@ class loadedWorld {
       b.setFromObject(meshes[i]);
       this.objects_.push(b);
     }
-    ////console.log(this.arr[0]);
+    //////console.log(this.arr[0]);
      //this._LoadTreeModel(this.arr[0], 100, 2,1);
     this._LoadTreeModel(this.arr[4], 25, 0.05,2);
      this._LoadTreeModel(this.arr[1], 50, 0.01,1);
@@ -221,7 +221,7 @@ class loadedWorld {
     this.scene.add(sphere);
 
    this.gui.add(this.plane.material, 'wireframe').name("plane texture").onChange((e) => {
-    console.log(e);
+    //console.log(e);
     this.resetPlane(e);
    })
    this.gui.add(this.params,'speed', 0,10).name("light cycle speed");
@@ -306,14 +306,14 @@ class loadedWorld {
 
     }
     
-    //console.log(point);
+    ////console.log(point);
     const loader = new GLTFLoader();
   loader.load(name, (gltf) => {
       gltf.scene.traverse(c => {
           c.castShadow = true;
           
         });
-        //console.log(gltf.scene.children[0]);
+        ////console.log(gltf.scene.children[0]);
         gltf.scene.children[0].scale.set(objScale,objScale,objScale);
         gltf.scene.children[0].position.set(point.x,point.y,point.z);
         this.scene.add(gltf.scene.children[0])
@@ -327,7 +327,7 @@ class loadedWorld {
 
 
   pondSpawn(name) {
-    //console.log(point);
+    ////console.log(point);
     const mapLoader= new THREE.TextureLoader();
     const texture = mapLoader.load('resources/background.jpg');
     const loader = new GLTFLoader();
@@ -336,7 +336,7 @@ class loadedWorld {
           c.castShadow = true;
           
         });
-        //console.log(gltf.scene.children[0]);
+        ////console.log(gltf.scene.children[0]);
 
         gltf.scene.children[0].position.set(15,0,15);
         this.scene.add(gltf.scene.children[0])
@@ -369,7 +369,7 @@ class loadedWorld {
 
 
   pondSpawn2(name) {
-    //console.log(point);
+    ////console.log(point);
     const mapLoader= new THREE.TextureLoader();
     const texture = mapLoader.load('resources/background.jpg');
     const loader = new GLTFLoader();
@@ -378,7 +378,7 @@ class loadedWorld {
           c.castShadow = true;
           
         });
-        //console.log(gltf.scene.children[0]);
+        ////console.log(gltf.scene.children[0]);
 
         gltf.scene.children[0].position.set(0,0,0);
       
@@ -405,14 +405,13 @@ class loadedWorld {
          this.scene.add( cylinder );
 
 		
-         this.gui.add(this.pond2Material.uniforms.u_movementY,'value',-1,1).name("directionY");
-         this.gui.add(this.pond2Material.uniforms.u_movementX,'value',-3,3).name("directionX");
+
          this.gui.add(this.pond2Material.uniforms.u_Resolution,'value',1,100).name("Resolution");
-         this.gui.add(this.pond2Material.uniforms.u_centre,'value',0,1).name("displacement");
+
          this.gui.add(this.pond2Material.uniforms.u_dropShown,'value',0,1).name("shown");
          this.gui.add(this.pond2Material.uniforms.u_dropSize,'value',0,1).name("size");
          this.gui.add(this.pond2Material.uniforms.u_lifeSpan,'value',0,1).name("LifeSpan");
-         this.gui.add(this.pond2Material.uniforms.u_Intensity,'value',1,1000).name("Intensity");
+
 
   });
   }
@@ -431,9 +430,9 @@ _LoadTreeModel(name, amount, scale, repeat) {
           c.castShadow = true;
           
         });
-        ////console.log(gltf.scene.children[0].children[0]);
+        //////console.log(gltf.scene.children[0].children[0]);
         if(repeat <2) {
-          //console.log(repeat);
+          ////console.log(repeat);
           var material = gltf.scene.children[0].material;
           let geo = new THREE.BoxGeometry(0,0,0);
           let geo2 = gltf.scene.children[0].geometry;
@@ -471,7 +470,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
           var geoGroup = [];
           var matGroup = [];
           var clusterGroup = [];
-          //console.log(gltf.scene.children[0].children.length)
+          ////console.log(gltf.scene.children[0].children.length)
           for(let i = 0; i <gltf.scene.children[0].children.length; i++) {
               geoGroup.push(gltf.scene.children[0].children[i].geometry);
               matGroup.push(gltf.scene.children[0].children[i].material);
@@ -500,13 +499,13 @@ _LoadTreeModel(name, amount, scale, repeat) {
                 target.scale.setScalar(scale);
                 target.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
                 target.updateMatrix();
-                  ////console.log(clusterGroup);
+                  //////console.log(clusterGroup);
                   for(let k = 0; k<clusterGroup.length; k++) {
                     clusterGroup[k].setMatrixAt( i, target.matrix );
 
                   }
                     if(z == amount -1) {
-                      // //console.log(true)
+                      // ////console.log(true)
                     }
                   i++;
               }
@@ -693,21 +692,21 @@ _LoadTreeModel(name, amount, scale, repeat) {
     window.addEventListener("click",  (event) => {
   
       if(this.draggable[0]) {
-        //////console.log('drag is gonezos '+ this.draggable[0].userData.name)
+        ////////console.log('drag is gonezos '+ this.draggable[0].userData.name)
         this.draggable.pop();
         return;
       }
           
       this.clickMouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       this.clickMouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-      ////console.log(this.fpsCamera);
+      //////console.log(this.fpsCamera);
       this.raycaster.setFromCamera( this.clickMouse, this.camera );
       this.found = this.raycaster.intersectObjects( this.scene.children);
-      //console.log(this.found[0])
+      ////console.log(this.found[0])
       
       if((this.found.length>0 && this.found[0].object.userData.draggable)) {
         this.draggable.push(this.found[0].object);
-        //////console.log(this.found[0].object.userData.name +" is found");
+        ////////console.log(this.found[0].object.userData.name +" is found");
     
       } else if((this.found.length>0 && this.found[0].object.parent.userData.draggable)) {
         this.draggable.push(this.found[0].object.parent);
@@ -734,7 +733,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
       this.raycaster.setFromCamera( this.moveMouse, this.camera );
       this.found2 = this.raycaster.intersectObjects( this.scene.children );
       if(this.found2.length>0) {
-        //console.log(this.found2)
+        ////console.log(this.found2)
         for(let o of this.found2){
           if(!o.object.userData.ground)
             continue
@@ -747,7 +746,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
   _loadClouds() {
     this.CloudScene = new cloudScene();
     this.scene.add(this.CloudScene);
-    //////console.log(this.CloudScene);
+    ////////console.log(this.CloudScene);
     this.rainDown = new rainFx(this.CloudScene);
 
   }
