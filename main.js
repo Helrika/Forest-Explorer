@@ -14,6 +14,7 @@ import {rainFx} from './rain.js';
 import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 import { cloudScene } from './clouds.js';
+import { sceneGeneration } from './sceneGen.js';
 import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import datGui from 'https://cdn.skypack.dev/dat.gui';
 
@@ -24,7 +25,7 @@ class loadedWorld {
       this.initializeScene_();
       this.InitializeCamera();
       this.raycast();
-      this._loadClouds();
+      this._SceneGeneration();
       this.shaderActive = false;
   }
 
@@ -51,7 +52,6 @@ class loadedWorld {
       this.previousRAF = null;
       //animation state
       this.mixers = [];
-      this.object = [];
       this.boxes = [];
       this.clock=new THREE.Clock();
       this.objectlist =[];
@@ -74,9 +74,7 @@ class loadedWorld {
       // load a sound and set it as the Audio object's buffer
       this.audioLoader = new THREE.AudioLoader();
       document.body.addEventListener('click', (e) => this.onclick(this.sound,this.audioLoader), false);
-      this.cloudsArr = [];
-      this.rainCount =15000;
-      this.drops = 0;
+
 
       this.grassmat = [];
       this.grassmat2 = this.loadMaterial_("Grass_001_", 110);
@@ -115,34 +113,12 @@ class loadedWorld {
   //////////// change any environment here
   ////////////////////////////////////////////////////////////////////
   initializeScene_() {
-    //this is a place holder. edit all the scene elements here. then remove the placeholder assets
-    const loader = new THREE.CubeTextureLoader();
-    const texture = loader.load([
-      // './resources/skybox/posx.jpg',
-      // './resources/skybox/negx.jpg',
-      // './resources/skybox/posy.jpg',
-      // './resources/skybox/negy.jpg',
-      // './resources/skybox/posz.jpg',
-      // './resources/skybox/negz.jpg'a,
-  ]);
-  const loader1 = new THREE.TextureLoader();
-  const height = loader1.load([
-    './resources/height-map.png',
-]);
-
-    texture.encoding = THREE.sRGBEncoding;
-    this.scene.background = texture;
+    //edit initial load here
 
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
-    //console.log(this.grassmat)
-    
-    const checkerboard = mapLoader.load('resources/grass.png');
-    checkerboard.anisotropy = maxAnisotropy;
-    checkerboard.wrapS = THREE.RepeatWrapping;
-    checkerboard.wrapT = THREE.RepeatWrapping;
-    checkerboard.repeat.set(32, 32);
-    checkerboard.encoding = THREE.sRGBEncoding;
+
+    //plane
     this.plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
         this.grassmat[0]);
@@ -158,25 +134,7 @@ class loadedWorld {
     this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
     this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
 
-
-  
-
     this.scene.add(this.plane);
-
-    const box = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 4, 4),
-      this.grassmat);
-    box.position.set(10, 2, 0);
-    box.castShadow = true;
-    box.receiveShadow = true;
-    this.object.push(box);
-   box.userData.draggable = true;
-     box.userData.name = "box";
-     this.boxBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-     //gets the boundaries
-     this.boxBB.setFromObject(box);
-     this.boxes.push(this.boxBB);
-     this.objectlist.push(box);
 
 
     this.playerGeo = new THREE.CapsuleGeometry(1,1,4,8);
@@ -190,29 +148,13 @@ class loadedWorld {
     this.playerBB.setFromObject(this.player);
     //this.scene.add(this.player);  
 
-    // // Create Box3 for each mesh in the scene so that we can
-    // // do some easy intersection tests.
-    const meshes = [
-      this.plane, box];
 
-    this.objects_ = [];
 
-    for (let i = 0; i < meshes.length; ++i) {
-      const b = new THREE.Box3();
-      b.setFromObject(meshes[i]);
-      this.objects_.push(b);
-    }
-    //////console.log(this.arr[0]);
-     //this._LoadTreeModel(this.arr[0], 100, 2,1);
-    this._LoadTreeModel(this.arr[4], 25, 0.05,2);
-     this._LoadTreeModel(this.arr[1], 50, 0.01,1);
-     this._LoadTreeModel(this.arr[2], 150, 0.1,1);
-     this._LoadTreeModel(this.arr[5], 50, 1,1);
-    // this._LoadTreeModel(this.arr[2], 300, 0.3,1);
-    this._LoadTreeModel(this.arr[3],150,4,2);
-    //this._LoadRockModel();
+    //manual spawn of ponds
     this.pondSpawn(this.arr[6]);
     this.pondSpawn2(this.arr[7]);
+
+    //sky
     const skytext = mapLoader.load("/resources/Sky_horiz_19.jpg");
     const geometry = new THREE.SphereGeometry(400, 32, 16);
     const material = new THREE.MeshStandardMaterial({map: skytext});
@@ -220,8 +162,9 @@ class loadedWorld {
     sphere.material.side = THREE.BackSide;
     this.scene.add(sphere);
 
+   //gui 
    this.gui.add(this.plane.material, 'wireframe').name("plane texture").onChange((e) => {
-    //console.log(e);
+
     this.resetPlane(e);
    })
    this.gui.add(this.params,'speed', 0,10).name("light cycle speed");
@@ -261,20 +204,8 @@ class loadedWorld {
     this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
     this.scene.add(this.plane);
     }
-
-
-
-
-
-
-  
   }
 
-
-  something(geo2) {
-    geo2.translate(Math.random() * 1,0,Math.random()*1);
-    return geo2;
-  }
 
   manualSpawn(name, point, num) {
     var objScale = 1;
@@ -306,23 +237,17 @@ class loadedWorld {
 
     }
     
-    ////console.log(point);
+
     const loader = new GLTFLoader();
-  loader.load(name, (gltf) => {
+    loader.load(name, (gltf) => {
       gltf.scene.traverse(c => {
           c.castShadow = true;
           
         });
-        ////console.log(gltf.scene.children[0]);
         gltf.scene.children[0].scale.set(objScale,objScale,objScale);
         gltf.scene.children[0].position.set(point.x,point.y,point.z);
         this.scene.add(gltf.scene.children[0])
-
-
-		
-
-
-  });
+    });
   }
 
 
@@ -331,7 +256,7 @@ class loadedWorld {
     const mapLoader= new THREE.TextureLoader();
     const texture = mapLoader.load('resources/background.jpg');
     const loader = new GLTFLoader();
-  loader.load(name, (gltf) => {
+    loader.load(name, (gltf) => {
       gltf.scene.traverse(c => {
           c.castShadow = true;
           
@@ -360,11 +285,7 @@ class loadedWorld {
         const cylinder = new THREE.Mesh( geometry, this.pondMaterial );
         cylinder.position.set(15.095,0,15.051);
          this.scene.add( cylinder );
-
-		
-
-
-  });
+    });
   }
 
 
@@ -373,7 +294,7 @@ class loadedWorld {
     const mapLoader= new THREE.TextureLoader();
     const texture = mapLoader.load('resources/background.jpg');
     const loader = new GLTFLoader();
-  loader.load(name, (gltf) => {
+    loader.load(name, (gltf) => {
       gltf.scene.traverse(c => {
           c.castShadow = true;
           
@@ -413,123 +334,13 @@ class loadedWorld {
          this.gui.add(this.pond2Material.uniforms.u_lifeSpan,'value',0,1).name("LifeSpan");
 
 
-  });
+    });
   }
-
-_LoadTreeModel(name, amount, scale, repeat) {
-  
-  var target = new THREE.Object3D();
-  var target2 = new THREE.Object3D();
-  var matrix = new THREE.Matrix4();
-  var position = new THREE.Vector3();
-  // let geo = new THREE.BufferGeometry();
-  let trees = [];
-  const loader = new GLTFLoader();
-  loader.load(name, (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
-          
-        });
-        //////console.log(gltf.scene.children[0].children[0]);
-        if(repeat <2) {
-          ////console.log(repeat);
-          var material = gltf.scene.children[0].material;
-          let geo = new THREE.BoxGeometry(0,0,0);
-          let geo2 = gltf.scene.children[0].geometry;
-  
-          var cluster = new THREE.InstancedMesh( 
-            geo2,
-            material, 
-            amount, //instance count 
-            false, //is it dynamic 
-            false,  //does it have color 
-            true,  //uniform scale
-          );
-          cluster.receiveShadow = true;
-          cluster.castShadow = true;
-          this.scene.add( cluster );
-          var k = 0;
-          var offset = ( amount - 1 ) / 2;
-          for ( var x = 0; x < amount; x ++ ) {
-
-            for ( var y = 0; y < amount; y ++ ) {
-
-              for ( var z = 0; z < amount; z ++ ) {
-                target.scale.setScalar(scale);
-                target.position.set( Math.sin(Math.random() * 2*Math.PI) *70, 0, Math.sin(Math.random()*2*Math.PI) *70);
-                target.updateMatrix();
-
-                cluster.setMatrixAt( k ++, target.matrix );
-
-              }
-
-            }
-
-          }
-        } else {
-          var geoGroup = [];
-          var matGroup = [];
-          var clusterGroup = [];
-          ////console.log(gltf.scene.children[0].children.length)
-          for(let i = 0; i <gltf.scene.children[0].children.length; i++) {
-              geoGroup.push(gltf.scene.children[0].children[i].geometry);
-              matGroup.push(gltf.scene.children[0].children[i].material);
-              var cluster = new THREE.InstancedMesh( 
-                gltf.scene.children[0].children[i].geometry,
-                gltf.scene.children[0].children[i].material, 
-                amount, //instance count 
-                false, //is it dynamic 
-                false,  //does it have color 
-                true,  //uniform scale
-              );
-              cluster.receiveShadow = true;
-              cluster.castShadow = true;
-              clusterGroup.push(cluster);
-
-              this.scene.add( clusterGroup[i] );
-          }
-
-                    var i = 0;
-          var offset = ( amount - 1 ) / 2;
-          for ( var x = 0; x < amount; x ++ ) {
-
-            for ( var y = 0; y < amount; y ++ ) {
-
-              for ( var z = 0; z < amount; z ++ ) {
-                target.scale.setScalar(scale);
-                target.position.set(  Math.sin(Math.random() * 2*Math.PI) *100, 0, Math.sin(Math.random()*2*Math.PI) *100 );
-                target.updateMatrix();
-                  //////console.log(clusterGroup);
-                  for(let k = 0; k<clusterGroup.length; k++) {
-                    clusterGroup[k].setMatrixAt( i, target.matrix );
-
-                  }
-                    if(z == amount -1) {
-                      // ////console.log(true)
-                    }
-                  i++;
-              }
-
-            }
-
-          }
-
-        }
-
-
-		
-
-
-  });
-
-
-}
-
-
 
   ////////////////////////////////////////////////////////////////////
   //////////// change any material loading here
   ////////////////////////////////////////////////////////////////////
+
   loadMaterial_(name, tiling) {
     this.shaderActive = false;
     //you can use this to load mateirials. edit the stuff in here and remove placeholder assets
@@ -692,25 +503,19 @@ _LoadTreeModel(name, amount, scale, repeat) {
     window.addEventListener("click",  (event) => {
   
       if(this.draggable[0]) {
-        ////////console.log('drag is gonezos '+ this.draggable[0].userData.name)
         this.draggable.pop();
         return;
       }
           
       this.clickMouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
       this.clickMouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-      //////console.log(this.fpsCamera);
       this.raycaster.setFromCamera( this.clickMouse, this.camera );
       this.found = this.raycaster.intersectObjects( this.scene.children);
-      ////console.log(this.found[0])
       
       if((this.found.length>0 && this.found[0].object.userData.draggable)) {
         this.draggable.push(this.found[0].object);
-        ////////console.log(this.found[0].object.userData.name +" is found");
-    
       } else if((this.found.length>0 && this.found[0].object.parent.userData.draggable)) {
         this.draggable.push(this.found[0].object.parent);
-  
       } else {
         this.manualSpawn(this.arr[this.params.nums], this.found[0].point, this.params.nums);
       }
@@ -727,6 +532,7 @@ _LoadTreeModel(name, amount, scale, repeat) {
       }); 
   }
  //draggable items 
+ //this does work but due to complications it was disabled and used for something else
   dragObject() {
     if(this.draggable[0] != null) {
   
@@ -743,11 +549,23 @@ _LoadTreeModel(name, amount, scale, repeat) {
       }
     }
   }
-  _loadClouds() {
+  
+  _SceneGeneration() {
     this.CloudScene = new cloudScene();
     this.scene.add(this.CloudScene);
     ////////console.log(this.CloudScene);
     this.rainDown = new rainFx(this.CloudScene);
+
+    this.bush = new sceneGeneration(this.arr[4], 25, 0.05,2);
+    this.scene.add(this.bush);
+    this.bush2 = new sceneGeneration(this.arr[1], 50, 0.01,1);
+    this.scene.add(this.bush2);
+    this.rock1 = new sceneGeneration(this.arr[2], 150, 0.1,1);
+    this.scene.add(this.rock1);
+    this.rock2 = new sceneGeneration(this.arr[5], 50, 1,1);
+    this.scene.add(this.rock2);
+    this.trees = new sceneGeneration(this.arr[3],150,4,2);
+    this.scene.add(this.trees);
 
   }
 
@@ -797,7 +615,6 @@ _LoadTreeModel(name, amount, scale, repeat) {
   
     
       this.fpsCamera.Update(timeElapsedS);
-     // this.collisions.Update(timeElapsedS);
 
   }
   
