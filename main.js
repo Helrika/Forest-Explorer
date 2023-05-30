@@ -15,6 +15,7 @@ import {dayNightCycle} from './lightCycle.js';
 import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 import { cloudScene } from './clouds.js';
 import { sceneGeneration } from './sceneGen.js';
+import { pondSpawn } from './ponds.js';
 import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import datGui from 'https://cdn.skypack.dev/dat.gui';
 
@@ -148,12 +149,6 @@ class loadedWorld {
     this.playerBB.setFromObject(this.player);
     //this.scene.add(this.player);  
 
-
-
-    //manual spawn of ponds
-    this.pondSpawn(this.arr[6]);
-    this.pondSpawn2(this.arr[7]);
-
     //sky
     const skytext = mapLoader.load("/resources/Sky_horiz_19.jpg");
     const geometry = new THREE.SphereGeometry(400, 32, 16);
@@ -247,93 +242,6 @@ class loadedWorld {
         gltf.scene.children[0].scale.set(objScale,objScale,objScale);
         gltf.scene.children[0].position.set(point.x,point.y,point.z);
         this.scene.add(gltf.scene.children[0])
-    });
-  }
-
-
-  pondSpawn(name) {
-    ////console.log(point);
-    const mapLoader= new THREE.TextureLoader();
-    const texture = mapLoader.load('resources/background.jpg');
-    const loader = new GLTFLoader();
-    loader.load(name, (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
-          
-        });
-        ////console.log(gltf.scene.children[0]);
-
-        gltf.scene.children[0].position.set(15,0,15);
-        this.scene.add(gltf.scene.children[0])
-        const geometry = new THREE.CylinderGeometry( 1, 1, 0.7, 32 ); 
-        this.pondMaterial = new THREE.ShaderMaterial({
-          uniforms: {
-          u_time: {value: 0},
-          u_texture: {value: texture},
-          u_movementY: {value :0},
-          u_movementX: {value :0},
-          u_Resolution: {value: 10.0},
-          u_centre: {value: 0.5},
-          u_dropShown: {value: 0.2},
-          u_dropSize: {value: 0.1},
-          u_lifeSpan: {value: 0.3},
-          u_Intensity: {value: 10},
-          }
-        });
-        this.pondMaterial.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
-        this.pondMaterial.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
-        const cylinder = new THREE.Mesh( geometry, this.pondMaterial );
-        cylinder.position.set(15.095,0,15.051);
-         this.scene.add( cylinder );
-    });
-  }
-
-
-  pondSpawn2(name) {
-    ////console.log(point);
-    const mapLoader= new THREE.TextureLoader();
-    const texture = mapLoader.load('resources/background.jpg');
-    const loader = new GLTFLoader();
-    loader.load(name, (gltf) => {
-      gltf.scene.traverse(c => {
-          c.castShadow = true;
-          
-        });
-        ////console.log(gltf.scene.children[0]);
-
-        gltf.scene.children[0].position.set(0,0,0);
-      
-        this.scene.add(gltf.scene.children[0])
-        const geometry = new THREE.CylinderGeometry( 2, 2, 0.5, 32 ); 
-        this.pond2Material = new THREE.ShaderMaterial({
-          uniforms: {
-          u_time: {value: 0},
-          u_texture: {value: texture},
-          u_movementY: {value :0},
-          u_movementX: {value :0},
-          u_Resolution: {value: 10.0},
-          u_centre: {value: 0.5},
-          u_dropShown: {value: 0.2},
-          u_dropSize: {value: 0.1},
-          u_lifeSpan: {value: 0.3},
-          u_Intensity: {value: 10},
-          }
-        });
-        this.pond2Material.vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
-        this.pond2Material.fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
-        const cylinder = new THREE.Mesh( geometry, this.pond2Material );
-        cylinder.position.set(0,0,0);
-         this.scene.add( cylinder );
-
-		
-
-         this.gui.add(this.pond2Material.uniforms.u_Resolution,'value',1,100).name("Resolution");
-
-         this.gui.add(this.pond2Material.uniforms.u_dropShown,'value',0,1).name("shown");
-         this.gui.add(this.pond2Material.uniforms.u_dropSize,'value',0,1).name("size");
-         this.gui.add(this.pond2Material.uniforms.u_lifeSpan,'value',0,1).name("LifeSpan");
-
-
     });
   }
 
@@ -567,6 +475,10 @@ class loadedWorld {
     this.trees = new sceneGeneration(this.arr[3],150,4,2);
     this.scene.add(this.trees);
 
+    this.pond1 = new pondSpawn(this.arr[7], this.gui, 1);
+    this.scene.add(this.pond1);
+    this.pond2 = new pondSpawn(this.arr[6], this.gui, 0);
+    this.scene.add(this.pond2);
   }
 
 //animate
@@ -581,13 +493,9 @@ class loadedWorld {
           if(this.grassmat.length >1) {
             this.grassmat[1].uniforms.u_time.value =t/1000;
           }
-          
-          if(this.pondMaterial){
-            this.pondMaterial.uniforms.u_time.value =t/1000;
-          }
-          if(this.pond2Material) {
-            this.pond2Material.uniforms.u_time.value =t/1000;
-          }
+
+          this.pond1.Update(t);
+          this.pond2.Update(t);
           
           this.flashLight.position.x = this.camera.position.x + 0;
           this.flashLight.position.y = this.camera.position.y + 1;
