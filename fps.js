@@ -192,21 +192,11 @@ export class InputController {
     checkFortarget() {
       for(let i = 0; i<this.search.length; i+=90) {
         this.raycaster.set(this.camera.position, this.search[i], 0.0, 500.0);
-        //console.log(this.raycaster)
          this.intersects = this.raycaster.intersectObjects(this.objects);
-         // console.log("origin")
-         // console.log(this.raycaster.ray.origin)
-         // console.log("direction")
-         // console.log(this.raycaster.ray.direction)
          if(this.intersects[0]) {
            console.log(true);
          }
       }
-      this.search.forEach((direction) => {
-       
-        
-
-      });
     }
     UpdateCollisions(_) {
       this.playerBB.copy(this.player.geometry.boundingBox).applyMatrix4(this.player.matrixWorld);
@@ -216,15 +206,10 @@ export class InputController {
       for (let i = 0; i<this.boxs.length;i++) {
         if(this.playerBB.intersectsBox(this.boxs[i])){
           this.groundHeight = this.boxs[i].max.y +2;
-         // this.player.position.copy(this.camera.position);
-          //  this.player.position.y = 3;
-          //  this.camera.position.y =3;
-          // console.log(this.player.position);
         } else {
          
           this.groundHeight = 2;
-          //this.canJump = false;
-          //console.log(this.player.position); 
+
         }
         
       }
@@ -232,27 +217,13 @@ export class InputController {
     
     UpdateCamera(_) {
       this.camera.quaternion.copy(this.rotation);
-     //console.log(this.translation);
-     this.camera.position.copy(this.translation);
+
+      this.camera.position.copy(this.translation);
      
 
-     this.player.quaternion.copy(this.rotation);
-     //console.log(this.translation);
-     this.player.position.copy(this.translation);
-    
- 
-    //  console.log("pleyr stuff")
+      this.player.quaternion.copy(this.rotation);
 
-    //  console.log(this.player);
-  
-    //  console.log("came")
-    //  console.log(this.camera);
-  
-    // this.camera.position.y = 2;
-     //this.camera.y = 10;
-  
-   
-    
+      this.player.position.copy(this.translation);
     
     }
   
@@ -316,46 +287,6 @@ export class InputController {
         jump.multiplyScalar(this.jumpVelocity  * timeElapsedS * 10);
            this.translation.add(jump);
       }
-
-  //     const jump = new THREE.Vector3(0, 1, 0);
-  // //this is the jump handlers. you might be wonderign why is the value differenc e so high. change the 10 to a low number and you wont fall
-  //     if(!this.revert) {
-  //       const jumpVelocity = (this.input.key(KEYS.space) ? 10 : 0 );
-  //         this.canJump = false;
-  //         //this.revert = true;
-  //         jump.applyQuaternion(qx);
-  
-  //         jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
-  //         this.translation.add(jump);
-  //     }
-  
-      
-  
-
-     
-  //     if(this.revert) {
-  //       const jumpVelocity = (this.input.key(KEYS.space) ? -0.6 : -0.6 );
-  //       jump.applyQuaternion(qx);
-  
-  //       jump.multiplyScalar(jumpVelocity  * timeElapsedS * 10);
-  //       this.translation.add(jump);
-  //     }
-  
-      //altjump code. snappy but its the only one that allows for gravity falling regardless of value
-      // if (this.input.key(KEYS.space) && this.canJump) {// space
-      //   this.canJump = false;
-      //   this.velocity_y = 160;
-      // }
-      // this.camera.position.y+=this.velocity_y*timeElapsedS;
-  
-      // if(this.canJump==false){
-      //   this.velocity_y-=160*2*timeElapsedS;
-      //   if(this.camera.position.y<=2){
-      //   this.canJump = false;
-      //   this.velocity_y=0;
-      //   this. camera.position.y=2;
-      //   }
-      // }
     
     }
   
