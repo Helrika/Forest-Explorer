@@ -1,29 +1,18 @@
-//import { KeyDisplay } from './utils';
-//import { CharacterControls } from './characterControls';
 import * as THREE from 'three';
-
-import { OrbitControls } from "./build/three/examples/jsm/controls/OrbitControls.js";
-//import {DragControls} from './build/three/examples/jsm/controls/DragControls.js';
-
-//import {FBXLoader} from './build/three/examples/jsm/loaders/FBXLoader.js';
 import {GLTFLoader} from './build/three/examples/jsm/loaders/GLTFLoader.js';
-//import {FirstPersonControls} from 'fps';
-//import CharacterController from "charactercontroller";
 import {FirstPersonCamera} from './fps.js';
 import {rainFx} from './rain.js';
 import {dayNightCycle} from './lightCycle.js';
-import {PointerLockControls} from './build/three/examples/jsm/controls/PointerLockControls.js';
 import { cloudScene } from './clouds.js';
 import { sceneGeneration } from './sceneGen.js';
 import { pondSpawn } from './ponds.js';
-import {mergeBufferGeometries} from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
 import datGui from 'https://cdn.skypack.dev/dat.gui';
 
 class loadedWorld {
   constructor() {
       this.Initialize();
       this.InitializeLights();
-      this.initializeScene_();
+      this.initializeBase();
       this.InitializeCamera();
       this.raycast();
       this._SceneGeneration();
@@ -34,16 +23,16 @@ class loadedWorld {
       this.renderer = new THREE.WebGLRenderer({
           antialias: true,
         });
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
     
-        document.body.appendChild(this.renderer.domElement);
+      document.body.appendChild(this.renderer.domElement);
     
-        window.addEventListener('resize', () => {
-          this._OnWindowResize();
-        }, false);
+      window.addEventListener('resize', () => {
+        this._OnWindowResize();
+      }, false);
 
       // SCENE
       this.scene = new THREE.Scene();
@@ -88,13 +77,6 @@ class loadedWorld {
           vel: 1,
         };
       this.gui = new datGui.GUI();
-      // const orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
-      // orbitControls.enableDamping = true
-      // orbitControls.minDistance = 25
-      // orbitControls.maxDistance = 155
-      // orbitControls.enablePan = false
-      // orbitControls.maxPolarAngle = 0;
-      // orbitControls.update();
 
       this._RAF();
       
@@ -111,9 +93,9 @@ class loadedWorld {
   }
 
   ////////////////////////////////////////////////////////////////////
-  //////////// change any environment here
+  //////////// Initialized Base scene elements
   ////////////////////////////////////////////////////////////////////
-  initializeScene_() {
+  initializeBase() {
     //edit initial load here
 
     const mapLoader = new THREE.TextureLoader();
@@ -123,10 +105,10 @@ class loadedWorld {
     this.plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
         this.grassmat[0]);
-        this.plane.castShadow = false;
-        this.plane.receiveShadow = true;
-        this.plane.rotation.x = -Math.PI / 2;
-        this.plane.userData.ground= true;
+    this.plane.castShadow = false;
+    this.plane.receiveShadow = true;
+    this.plane.rotation.x = -Math.PI / 2;
+    this.plane.userData.ground= true;
     this.plane1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
     //gets the boundaries
     this.plane1BB.setFromObject(this.plane);
@@ -150,7 +132,7 @@ class loadedWorld {
     //this.scene.add(this.player);  
 
     //sky
-    const skytext = mapLoader.load("/resources/Sky_horiz_19.jpg");
+    const skytext = mapLoader.load("./resources/Sky_horiz_19.jpg");
     const geometry = new THREE.SphereGeometry(400, 32, 16);
     const material = new THREE.MeshStandardMaterial({map: skytext});
     const sphere = new THREE.Mesh(geometry, material);
@@ -158,6 +140,7 @@ class loadedWorld {
     this.scene.add(sphere);
 
    //gui 
+   
    this.gui.add(this.plane.material, 'wireframe').name("plane texture").onChange((e) => {
 
     this.resetPlane(e);
@@ -165,10 +148,11 @@ class loadedWorld {
    this.gui.add(this.params,'speed', 0,10).name("light cycle speed");
    this.gui.add(this.params,'nums', 0,this.arr.length -3).step(1).name("object spawner");
    this.gui.add(this.params,'vel', 0,10).name("Rain Velocity");
-   
-
   }
 
+  ////////////////////////////////////////////////////////////////////
+  //////////// Change plane
+  ////////////////////////////////////////////////////////////////////
   resetPlane(type) {
     this.scene.remove(this.plane);
 
@@ -176,32 +160,34 @@ class loadedWorld {
       this.plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
         this.grassmat[1]);
-        this.plane.castShadow = false;
-        this.plane.receiveShadow = true;
-        this.plane.rotation.x = -Math.PI / 2;
-        this.plane.userData.ground= true;
+      this.plane.castShadow = false;
+      this.plane.receiveShadow = true;
+      this.plane.rotation.x = -Math.PI / 2;
+      this.plane.userData.ground= true;
   
   
-    this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
-    this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
-    this.scene.add(this.plane);
+      this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+      this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+      this.scene.add(this.plane);
     } else {
       this.plane = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
         this.grassmat[0]);
-        this.plane.castShadow = false;
-        this.plane.receiveShadow = true;
-        this.plane.rotation.x = -Math.PI / 2;
-        this.plane.userData.ground= true;
+      this.plane.castShadow = false;
+      this.plane.receiveShadow = true;
+      this.plane.rotation.x = -Math.PI / 2;
+      this.plane.userData.ground= true;
   
   
-    this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
-    this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
-    this.scene.add(this.plane);
+      this.grassmat[1].vertexShader=document.getElementById( 'vertexShaderSimple' ).textContent
+      this.grassmat[1].fragmentShader=document.getElementById( 'fragmentShaderSimple' ).textContent
+      this.scene.add(this.plane);
     }
   }
 
-
+  ////////////////////////////////////////////////////////////////////
+  //////////// Click Spawn
+  ////////////////////////////////////////////////////////////////////
   manualSpawn(name, point, num) {
     var objScale = 1;
     switch(num) {
@@ -246,7 +232,7 @@ class loadedWorld {
   }
 
   ////////////////////////////////////////////////////////////////////
-  //////////// change any material loading here
+  //////////// Materials
   ////////////////////////////////////////////////////////////////////
 
   loadMaterial_(name, tiling) {
@@ -254,12 +240,6 @@ class loadedWorld {
     //you can use this to load mateirials. edit the stuff in here and remove placeholder assets
     const mapLoader = new THREE.TextureLoader();
     const maxAnisotropy = this.renderer.capabilities.getMaxAnisotropy();
-
-    // const metalMap = mapLoader.load('resources/textures/' + name + 'metallic.png');
-    // metalMap.anisotropy = maxAnisotropy;
-    // metalMap.wrapS = THREE.RepeatWrapping;
-    // metalMap.wrapT = THREE.RepeatWrapping;
-    // metalMap.repeat.set(tiling, tiling);
 
     const albedo = mapLoader.load('resources/textures/' + name + 'basecolor.jpg');
     albedo.anisotropy = maxAnisotropy;
@@ -285,20 +265,12 @@ class loadedWorld {
     roughnessMap.wrapS = THREE.RepeatWrapping;
     roughnessMap.wrapT = THREE.RepeatWrapping;
     roughnessMap.repeat.set(tiling, tiling);
-
-    // const occMap = mapLoader.load('resources/textures/' + name + 'OCC.jpg');
-    // roughnessMap.anisotropy = maxAnisotropy;
-    // roughnessMap.wrapS = THREE.RepeatWrapping;
-    // roughnessMap.wrapT = THREE.RepeatWrapping;
-    // roughnessMap.repeat.set(tiling, tiling);
     
     const material = new THREE.MeshStandardMaterial({
-     // metalnessMap: metalMap,
       map: albedo,
       normalMap: normalMap,
       roughnessMap: roughnessMap,
       displacementMap: displacementMap,
-     // occulisonMap: occMap,
     });
 
     return material;
@@ -330,7 +302,7 @@ class loadedWorld {
       u_movementX: {value :0},
       u_Resolution: {value: 100.0},
       u_centre: {value: 0.5},
-      u_dropShown: {value: 0.5},
+      u_dropShown: {value: 0.2},
       u_dropSize: {value: 0.01},
       u_lifeSpan: {value: 0.3},
       u_Intensity: {value: 1000},
@@ -342,7 +314,7 @@ class loadedWorld {
   }
 
   ////////////////////////////////////////////////////////////////////
-  //////////// change above the rest below is fine
+  //////////// Camera
   ////////////////////////////////////////////////////////////////////
 
   InitializeCamera() {
@@ -353,39 +325,36 @@ class loadedWorld {
     
   }
 
+  ////////////////////////////////////////////////////////////////////
+  //////////// Lights
+  ////////////////////////////////////////////////////////////////////
   InitializeLights() {
-    //lighting
-    //put lights here
-        //this.scene.add(new THREE.AmbientLight(0xffffff, 0.7))
+    this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    this.dirLight.position.set(0, 200, 0);
+    this.dirLight.castShadow = true;
+    this.dirLight.shadow.camera.top = 50;
+    this.dirLight.shadow.camera.bottom = - 50;
+    this.dirLight.shadow.camera.left = - 50;
+    this.dirLight.shadow.camera.right = 50;
+    this.dirLight.shadow.camera.near = 0.1;
+    this.dirLight.shadow.camera.far = 200;
+    this.dirLight.shadow.mapSize.width = 4096;
+    this.dirLight.shadow.mapSize.height = 4096;
+    this.scene.add(this.dirLight);
 
-        this.dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        this.dirLight.position.set(0, 200, 0);
-        this.dirLight.castShadow = true;
-        this.dirLight.shadow.camera.top = 50;
-        this.dirLight.shadow.camera.bottom = - 50;
-        this.dirLight.shadow.camera.left = - 50;
-        this.dirLight.shadow.camera.right = 50;
-        this.dirLight.shadow.camera.near = 0.1;
-        this.dirLight.shadow.camera.far = 200;
-        this.dirLight.shadow.mapSize.width = 4096;
-        this.dirLight.shadow.mapSize.height = 4096;
-        this.scene.add(this.dirLight);
-    
-        this.ambLight = new THREE.AmbientLight(0x101010, 0.5);
-        this.scene.add(this.ambLight);
-    
-        this.flashLight = new THREE.PointLight(0xE67638, 0, 30);
-        //this.camera.add(this.flashLight);
-        //this.flashLight.position.set(this.camera.position);
-        this.flashLight.position.set(0, 5, 0);
-        this.flashLight.target = this.camera;
-        this.scene.add(this.flashLight);
-        //this.player.add(this.flashLight);
-    
-        this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
-        this.horizonLight.position.set(0, 1, 0.5);
-        this.scene.add(this.horizonLight);
-        this.moveLight = new dayNightCycle(this.dirLight,this.horizonLight, this.scene.fog);
+    this.ambLight = new THREE.AmbientLight(0x101010, 0.5);
+    this.scene.add(this.ambLight);
+
+    this.flashLight = new THREE.PointLight(0xE67638, 0, 30);
+
+    this.flashLight.position.set(0, 5, 0);
+    this.flashLight.target = this.camera;
+    this.scene.add(this.flashLight);
+
+    this.horizonLight = new THREE.HemisphereLight (0xffffbb, 0x080820, 1);
+    this.horizonLight.position.set(0, 1, 0.5);
+    this.scene.add(this.horizonLight);
+    this.moveLight = new dayNightCycle(this.dirLight,this.horizonLight, this.scene.fog);
 
 
   }
@@ -395,13 +364,15 @@ class loadedWorld {
   
 //resize window
   _OnWindowResize() {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
   
 
-//ray cast set up
+  ////////////////////////////////////////////////////////////////////
+  //////////// Raycast
+  ////////////////////////////////////////////////////////////////////
   raycast() {
     this.raycaster = new THREE.Raycaster();
     this.clickMouse = new THREE.Vector2();
@@ -437,7 +408,7 @@ class loadedWorld {
       this.moveMouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   
   
-      }); 
+    }); 
   }
  //draggable items 
  //this does work but due to complications it was disabled and used for something else
@@ -457,9 +428,14 @@ class loadedWorld {
       }
     }
   }
-  
+
+  ////////////////////////////////////////////////////////////////////
+  //////////// Main Scene Generation
+  ////////////////////////////////////////////////////////////////////  
   _SceneGeneration() {
-    this.CloudScene = new cloudScene();
+    const mapLoader = new THREE.TextureLoader();
+    const rain = mapLoader.load('./resources/clipart27636.png');
+    this.CloudScene = new cloudScene(rain);
     this.scene.add(this.CloudScene);
     ////////console.log(this.CloudScene);
     this.rainDown = new rainFx(this.CloudScene);
@@ -481,7 +457,9 @@ class loadedWorld {
     this.scene.add(this.pond2);
   }
 
-//animate
+  ////////////////////////////////////////////////////////////////////
+  //////////// Animation State
+  ////////////////////////////////////////////////////////////////////
   _RAF() {
       requestAnimationFrame((t) => {
           if (this.previousRAF === null) {
